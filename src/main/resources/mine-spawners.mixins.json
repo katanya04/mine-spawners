@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.marco2124.minespawners.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "SpawnerBlockDropsXpMixin"
+  ],
+  "client": [
+    "SpawnerBlockPermissionsMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
