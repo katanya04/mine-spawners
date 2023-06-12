@@ -10,7 +10,7 @@
   "contact": {
     "repo": "https://github.com/Marco2124/mine-spawners"
   },
-  "license": "GNU Lesser General Public License v3.0",
+  "license": "LGPL-3.0-only",
   "icon": "assets/mine-spawners/icon.png",
   "environment": "*",
   "mixins": ["mine-spawners.mixins.json"],
@@ -25,6 +25,6 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "${minecraft_version}"
+    "minecraft": ["${minecraft_version}","1.20.1"]
   }
 }
