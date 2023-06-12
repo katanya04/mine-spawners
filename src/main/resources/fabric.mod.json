@@ -8,9 +8,9 @@
     "Marco2124"
   ],
   "contact": {
-    "repo": "https://github.com/Equipo/mine-spawners"
+    "repo": "https://github.com/Marco2124/mine-spawners"
   },
-  "license": "All-Rights-Reserved",
+  "license": "GNU Lesser General Public License v3.0",
   "icon": "assets/mine-spawners/icon.png",
   "environment": "*",
   "mixins": ["mine-spawners.mixins.json"],
