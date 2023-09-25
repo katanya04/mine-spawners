@@ -10,14 +10,11 @@
   "contact": {
     "repo": "https://github.com/Marco2124/mine-spawners"
   },
-  "license": "LGPL-3.0-only",
+  "license": "GNU General Public License v2.0",
   "icon": "assets/mine-spawners/icon.png",
   "environment": "*",
   "mixins": ["mine-spawners.mixins.json"],
   "entrypoints": {
-    "client": [
-      "me.marco2124.minespawners.client.Mine_spawnersClient"
-    ],
     "main": [
       "me.marco2124.minespawners.Mine_spawners"
     ]
@@ -25,6 +22,6 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": ["${minecraft_version}","1.20.1"]
+    "minecraft": ["1.20","1.20.1","1.20.2"]
   }
 }
