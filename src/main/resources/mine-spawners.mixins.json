@@ -4,6 +4,7 @@
   "package": "me.marco2124.minespawners.mixins",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "UpdateSpawnPotentials",
     "SpawnerBlockDropsXpMixin",
     "SpawnerBlockPermissionsMixin"
   ],
