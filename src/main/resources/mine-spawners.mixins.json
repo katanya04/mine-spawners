@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.katanya04.minespawners.mixins",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+    "UpdateSpawnPotentials",
+    "SpawnerBlockDropsXpMixin",
+    "SpawnerBlockPermissionsMixin"
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

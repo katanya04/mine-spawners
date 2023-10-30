@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "mine-spawners",
+  "version": "${version}",
+  "name": "mine-spawners",
+  "description": "Mine spawners using a pickaxe with silktouch.",
+  "authors": [
+    "katanya04"
+  ],
+  "contact": {
+    "repo": "https://github.com/katanya04/mine-spawners"
+  },
+  "license": "GNU General Public License v2.0",
+  "icon": "assets/mine-spawners/icon.png",
+  "environment": "*",
+  "mixins": ["mine-spawners.mixins.json"],
+  "entrypoints": {
+    "main": [
+      "me.katanya04.minespawners.Mine_spawners"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": ["1.20","1.20.1","1.20.2"]
+  }
+}
