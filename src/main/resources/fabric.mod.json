@@ -5,10 +5,10 @@
   "name": "mine-spawners",
   "description": "Mine spawners using a pickaxe with silktouch.",
   "authors": [
-    "Marco2124"
+    "katanya04"
   ],
   "contact": {
-    "repo": "https://github.com/Marco2124/mine-spawners"
+    "repo": "https://github.com/katanya04/mine-spawners"
   },
   "license": "GNU General Public License v2.0",
   "icon": "assets/mine-spawners/icon.png",
