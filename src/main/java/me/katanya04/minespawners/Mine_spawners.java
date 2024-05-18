@@ -21,7 +21,7 @@ public class Mine_spawners implements ModInitializer {
             if (blockEntity == null || !blockEntity.getType().equals(BlockEntityType.MOB_SPAWNER))
                 return;
             MobSpawnerBlockEntity spawnerBlock = (MobSpawnerBlockEntity) blockEntity;
-            ItemStack itemInHand = player.getStackInHand(player.getActiveHand());
+            ItemStack itemInHand = player.getMainHandStack();
             if (!itemInHand.isIn(ItemTags.PICKAXES) || !EnchantmentHelper.hasSilkTouch(itemInHand))
                 return;
             ItemStack spawnerStack = new ItemStack(Items.SPAWNER, 1);
