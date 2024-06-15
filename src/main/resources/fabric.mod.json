@@ -14,14 +14,9 @@
   "icon": "assets/mine-spawners/icon.png",
   "environment": "*",
   "mixins": ["mine-spawners.mixins.json"],
-  "entrypoints": {
-    "main": [
-      "me.katanya04.minespawners.Mine_spawners"
-    ]
-  },
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": ["1.20.5"]
+    "minecraft": ["1.21"]
   }
 }

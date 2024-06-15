@@ -4,9 +4,11 @@
   "package": "me.katanya04.minespawners.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "UpdateSpawnPotentials",
     "SpawnerBlockDropsXpMixin",
-    "SpawnerBlockPermissionsMixin"
+    "SpawnerBlockPermissionsMixin",
+    "MoveNBTCompoundMixin",
+    "TrialSpawnerBlockPermissionsMixin",
+    "UpdateSpawnPotentialsMixin"
   ],
   "server": [],
   "injectors": {
