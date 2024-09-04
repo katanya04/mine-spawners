@@ -14,6 +14,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Sets the spawn potential to be the spawn entry one (See <a href="https://github.com/katanya04/mine-spawners/issues/1">Issue #1</a>)
+ */
 @Mixin(MobSpawnerLogic.class)
 public class UpdateSpawnPotentialsMixin {
     @Shadow private DataPool<MobSpawnerEntry> spawnPotentials;

@@ -15,6 +15,9 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.function.Supplier;
 
+/**
+ * Moves the nbt of the spawner from custom_data to block_entity_data
+ */
 @Mixin(Block.class)
 public class MoveNBTCompoundMixin {
     @Inject(method = "dropStack(Lnet/minecraft/world/World;Ljava/util/function/Supplier;Lnet/minecraft/item/ItemStack;)V", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILHARD)

@@ -14,6 +14,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+/**
+ * If spawner was mined with a silk touch pickaxe, don't drop xp
+ */
 @Mixin(SpawnerBlock.class)
 public class SpawnerBlockDropsXpMixin {
     @Inject(method = "onStacksDropped", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
