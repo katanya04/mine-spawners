@@ -3,7 +3,6 @@ package me.katanya04.minespawners.mixins;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SpawnerBlock;
 import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;

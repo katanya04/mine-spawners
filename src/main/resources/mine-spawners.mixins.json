@@ -8,7 +8,6 @@
     "MoveNBTCompoundMixin",
     "SpawnerBlockDropsXpMixin",
     "SpawnerBlockPermissionsMixin",
-    "TrialSpawnerBlockPermissionsMixin",
     "UpdateSpawnPotentialsMixin"
   ],
   "server": [],
