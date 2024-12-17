@@ -31,6 +31,7 @@ public class MoveNBTCompoundMixin {
         toCopy.remove("x");
         toCopy.remove("y");
         toCopy.remove("z");
+        toCopy.remove("Delay");
         NbtComponent newComponent = NbtComponent.of(toCopy);
         stack.set(DataComponentTypes.BLOCK_ENTITY_DATA, newComponent);
         stack.remove(DataComponentTypes.CUSTOM_DATA);
