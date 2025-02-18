@@ -1,8 +1,6 @@
 package me.katanya04.minespawners.mixins;
 
 import net.minecraft.block.Block;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -15,25 +13,21 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.function.Supplier;
 
-/**
- * Moves the nbt of the spawner from custom_data to block_entity_data
- */
 @Mixin(Block.class)
-public class MoveNBTCompoundMixin {
+public class RemoveNBTMixin {
     @Inject(method = "dropStack(Lnet/minecraft/world/World;Ljava/util/function/Supplier;Lnet/minecraft/item/ItemStack;)V", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILHARD)
     private static void injected(World world, Supplier<ItemEntity> itemEntitySupplier, ItemStack stack, CallbackInfo ci) {
-        NbtComponent customData = stack.getComponents().get(DataComponentTypes.CUSTOM_DATA);
-        if (customData == null)
+        NbtCompound spawnerNBT = stack.getNbt();
+        if (spawnerNBT == null)
             return;
-        if (!customData.contains("to_block_entity_data"))
+        NbtCompound blockEntityTag = spawnerNBT.getCompound("BlockEntityTag");
+        if (blockEntityTag == null)
             return;
-        NbtCompound toCopy = customData.copyNbt().getCompound("to_block_entity_data");
-        toCopy.remove("x");
-        toCopy.remove("y");
-        toCopy.remove("z");
-        toCopy.remove("Delay");
-        NbtComponent newComponent = NbtComponent.of(toCopy);
-        stack.set(DataComponentTypes.BLOCK_ENTITY_DATA, newComponent);
-        stack.remove(DataComponentTypes.CUSTOM_DATA);
+        blockEntityTag.remove("x");
+        blockEntityTag.remove("y");
+        blockEntityTag.remove("z");
+        blockEntityTag.remove("Delay");
+        spawnerNBT.put("BlockEntityTag", blockEntityTag);
+        stack.setNbt(spawnerNBT);
     }
 }

@@ -32,10 +32,12 @@ public class InputWidget extends TextFieldWidget {
         this.setTooltip(Tooltip.of(Text.of(configValue.tooltip), Text.of(configValue.tooltip)));
     }
 
+
+
     @Override
-    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
         int titleWidth = textRenderer.getWidth(configValue.key + ": ");
-        super.renderWidget(context, mouseX, mouseY, delta);
+        super.renderButton(context, mouseX, mouseY, delta);
         context.drawText(this.textRenderer, macroCaseToNormalCase(this.configValue.key) + ": ",
                 getX() - titleWidth, getY() + height / 2 - textRenderer.fontHeight / 2, 0xFFFFFFFF, true);
     }

@@ -1,4 +1,5 @@
 {
+  "type": "minecraft:block",
   "pools": [
     {
       "rolls": 1,
@@ -8,13 +9,13 @@
           "name": "minecraft:spawner",
           "functions": [
             {
-              "function": "minecraft:copy_custom_data",
+              "function": "minecraft:copy_nbt",
               "source": "block_entity",
               "ops": [
                 {
-                  "source": "",
-                  "target": "to_block_entity_data",
-                  "op": "replace"
+                  "source": "{}",
+                  "target": "BlockEntityTag",
+                  "op": "merge"
                 }
               ]
             }
@@ -23,15 +24,12 @@
             {
               "condition": "minecraft:match_tool",
               "predicate": {
-                "items": "#minecraft:pickaxes",
-                "predicates": {
-                  "minecraft:enchantments": [
-                    {
-                      "enchantments": "minecraft:silk_touch",
-                      "levels": 1
-                    }
-                  ]
-                }
+                "tag": "minecraft:pickaxes",
+                "enchantments": [
+                  {
+                    "enchantment": "minecraft:silk_touch"
+                  }
+                ]
               }
             }
           ]

@@ -4,8 +4,8 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.util.collection.DataPool;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.block.spawner.MobSpawnerEntry;
-import net.minecraft.block.spawner.MobSpawnerLogic;
+import net.minecraft.world.MobSpawnerEntry;
+import net.minecraft.world.MobSpawnerLogic;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -23,14 +23,8 @@ public class UpdateSpawnPotentialsMixin {
 
     @Shadow @Nullable private MobSpawnerEntry spawnEntry;
 
-    @Inject(method = "setEntityId", at = @At("HEAD"))
-    private void injected(EntityType<?> type, World world, Random random, BlockPos pos, CallbackInfo ci) {
-        this.spawnEntry = new MobSpawnerEntry();
-    }
-
     @Inject(method = "setEntityId", at = @At("TAIL"))
-    private void injected_2(EntityType<?> type, World world, Random random, BlockPos pos, CallbackInfo ci) {
-        if (this.spawnEntry != null)
-            this.spawnPotentials = DataPool.of(this.spawnEntry);
+    private void injected(EntityType<?> type, World world, Random random, BlockPos pos, CallbackInfo ci) {
+        this.spawnPotentials =  DataPool.of(this.spawnEntry != null ? this.spawnEntry : new MobSpawnerEntry());
     }
 }

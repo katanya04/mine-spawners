@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
 import java.util.Random;
@@ -24,23 +23,21 @@ import java.util.Random;
 @Mixin(Block.class)
 public class DropChanceMixin {
     @Inject(method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;)Ljava/util/List;",
-            at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
+            at = @At(value = "TAIL"))
     private static void dropStack1(BlockState state, ServerWorld world, BlockPos pos, BlockEntity blockEntity, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (blockEntity != null && (blockEntity.getType().equals(BlockEntityType.MOB_SPAWNER)
-                || blockEntity.getType().equals(BlockEntityType.TRIAL_SPAWNER))) {
+        if (blockEntity != null && (blockEntity.getType().equals(BlockEntityType.MOB_SPAWNER))) {
             float chance = ConfigValues.DROP_CHANCE.getValue() / 100;
             if (new Random().nextFloat() >= chance)
-                cir.getReturnValue().removeIf(item -> item.getItem().equals(Items.SPAWNER) || item.getItem().equals(Items.TRIAL_SPAWNER));
+                cir.getReturnValue().removeIf(item -> item.getItem().equals(Items.SPAWNER));
         }
     }
     @Inject(method = "getDroppedStacks(Lnet/minecraft/block/BlockState;Lnet/minecraft/server/world/ServerWorld;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/entity/BlockEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/item/ItemStack;)Ljava/util/List;",
-            at = @At(value = "TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
+            at = @At(value = "TAIL"))
     private static void dropStack2(BlockState state, ServerWorld world, BlockPos pos, BlockEntity blockEntity, Entity entity, ItemStack stack, CallbackInfoReturnable<List<ItemStack>> cir) {
-        if (blockEntity != null && (blockEntity.getType().equals(BlockEntityType.MOB_SPAWNER)
-                || blockEntity.getType().equals(BlockEntityType.TRIAL_SPAWNER))) {
+        if (blockEntity != null && (blockEntity.getType().equals(BlockEntityType.MOB_SPAWNER))) {
             float chance = ConfigValues.DROP_CHANCE.getValue() / 100;
             if (new Random().nextFloat() >= chance)
-                cir.getReturnValue().removeIf(item -> item.getItem().equals(Items.SPAWNER) || item.getItem().equals(Items.TRIAL_SPAWNER));
+                cir.getReturnValue().removeIf(item -> item.getItem().equals(Items.SPAWNER));
         }
     }
 }

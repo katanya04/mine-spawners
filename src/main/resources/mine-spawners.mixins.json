@@ -2,10 +2,10 @@
   "required": true,
   "minVersion": "0.8",
   "package": "me.katanya04.minespawners.mixins",
-  "compatibilityLevel": "JAVA_21",
+  "compatibilityLevel": "JAVA_17",
   "mixins": [
     "DropChanceMixin",
-    "MoveNBTCompoundMixin",
+    "RemoveNBTMixin",
     "SpawnerBlockDropsXpMixin",
     "SpawnerBlockPermissionsMixin",
     "UpdateSpawnPotentialsMixin"
