@@ -6,7 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import me.katanya04.minespawners.loot.LootFunctions;
+import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.NbtComponent;
@@ -49,7 +49,7 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
     }
 
     public @NotNull LootFunctionType<CopyDataComponentFunction> getType() {
-        return LootFunctions.copyDataComponentFunctionType;
+        return LootRegistration.copyDataComponentFunctionType;
     }
 
     @Override

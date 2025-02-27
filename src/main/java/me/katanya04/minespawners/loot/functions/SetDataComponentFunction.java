@@ -2,7 +2,7 @@ package me.katanya04.minespawners.loot.functions;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import me.katanya04.minespawners.loot.LootFunctions;
+import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.NbtComponent;
 import net.minecraft.item.ItemStack;
@@ -37,7 +37,7 @@ public class SetDataComponentFunction extends ConditionalLootFunction {
 
     @Override
     public @NotNull LootFunctionType<SetDataComponentFunction> getType() {
-        return LootFunctions.setDataComponentFunctionType;
+        return LootRegistration.setDataComponentFunctionType;
     }
 
     @Override

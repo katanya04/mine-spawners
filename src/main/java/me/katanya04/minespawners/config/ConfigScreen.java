@@ -40,7 +40,7 @@ public class ConfigScreen extends Screen {
             System.err.println("IO Exception while saving minespawners config values: " + e);
             e.printStackTrace();
         }
-        if (parent != null && this.client != null)
+        if (this.client != null)
             this.client.setScreen(this.parent);
     }
 
@@ -64,16 +64,9 @@ public class ConfigScreen extends Screen {
         };
         dropChance.setTooltip(Tooltip.of(Text.of(SimpleConfig.DROP_CHANCE.tooltip), Text.of(SimpleConfig.DROP_CHANCE.tooltip)));
         this.addDrawableChild(dropChance);
-        ButtonWidget returnButton = ButtonWidget.builder(Text.of("Done"), (btn) -> {
-            try {
-                SimpleConfig.saveToFile();
-            } catch (IOException e) {
-                throw new RuntimeException("Could not save config data for minespawners mod: " + e);
-            } finally {
-                this.close();
-            }
-        }).dimensions(width / 2 - 40, (int) (height * 0.9 - 20), 80, 20).tooltip(
-                Tooltip.of(Text.literal("Press to save configuration and return to previous menu"))).build();
+        ButtonWidget returnButton = ButtonWidget.builder(Text.of("Done"), (btn) -> this.close()).dimensions(
+                width / 2 - 40, (int) (height * 0.9 - 20), 80, 20).tooltip(Tooltip.of(Text.literal(
+                        "Press to save configuration and return to previous menu"))).build();
         this.addDrawableChild(returnButton);
     }
 }

@@ -9,9 +9,9 @@ import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 
 /**
- * Registration of the {@link SetDataComponentFunction} loot function
+ * Registration of the {@link SetDataComponentFunction} and {@link CopyDataComponentFunction} loot functions
  */
-public class LootFunctions {
+public class LootRegistration {
     public static LootFunctionType<SetDataComponentFunction> setDataComponentFunctionType;
     public static LootFunctionType<CopyDataComponentFunction> copyDataComponentFunctionType;
     public static void register() {
