@@ -17,7 +17,7 @@
     "main": ["me.katanya04.minespawners.Main"],
     "modmenu": ["me.katanya04.minespawners.config.ModMenuEntryPoint"]
   },
-  "license": "GNU General Public License v2.0",
+  "license": "GNU General Public License v3.0",
   "icon": "assets/mine-spawners/icon.png",
   "environment": "*",
   "mixins": ["mine-spawners.mixins.json"],

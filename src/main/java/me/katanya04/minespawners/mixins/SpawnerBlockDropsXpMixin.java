@@ -13,7 +13,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.Optional;
 
@@ -22,7 +21,7 @@ import java.util.Optional;
  */
 @Mixin(SpawnerBlock.class)
 public class SpawnerBlockDropsXpMixin {
-    @Inject(method = "onStacksDropped", at = @At("HEAD"), locals = LocalCapture.CAPTURE_FAILHARD, cancellable = true)
+    @Inject(method = "onStacksDropped", at = @At("HEAD"), cancellable = true)
     private void injected(BlockState state, ServerWorld world, BlockPos pos, ItemStack tool, boolean dropExperience, CallbackInfo ci) {
         Optional<Registry<Enchantment>> enchantmentRegistry = world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT);
         enchantmentRegistry.flatMap(enchantments -> enchantments.getEntry(Identifier.ofVanilla("silk_touch")))

@@ -4,8 +4,6 @@
   "package": "me.katanya04.minespawners.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "DropChanceMixin",
-    "MoveNBTCompoundMixin",
     "SpawnerBlockDropsXpMixin",
     "SpawnerBlockPermissionsMixin",
     "UpdateSpawnPotentialsMixin"
