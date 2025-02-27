@@ -14,6 +14,6 @@ public class LootRegistration {
     public static LootConditionType randomChanceFromConfigConditionType;
     public static void register() {
         randomChanceFromConfigConditionType = Registry.register(Registries.LOOT_CONDITION_TYPE,
-                Identifier.of(Main.MOD_ID, "random_chance_from_provider"), new LootConditionType(RandomChanceFromProviderCondition.CODEC));
+                Identifier.of(Main.MOD_ID, "random_chance_from_provider"), new LootConditionType(new RandomChanceFromProviderCondition.Serializer()));
     }
 }
