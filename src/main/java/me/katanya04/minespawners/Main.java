@@ -1,22 +1,24 @@
 package me.katanya04.minespawners;
 
-import me.katanya04.minespawners.config.ConfigValue;
-import me.katanya04.minespawners.config.ConfigValues;
 import me.katanya04.minespawners.config.SimpleConfig;
+import me.katanya04.minespawners.loot.LootRegistration;
+import me.katanya04.minespawners.loot.SpawnerDrops;
 import net.fabricmc.api.ModInitializer;
 
 /**
  * Entrypoint for the mod
  */
 public class Main implements ModInitializer {
+    public static final String MOD_ID = "mine_spawners";
     @Override
     public void onInitialize() {
+        LootRegistration.register();
+        SpawnerDrops.setDrops();
         try {
             SimpleConfig.initializeConfig();
         } catch (Exception ioException) {
             System.err.println("IO exception while accessing config file for minespawners mod: " + ioException);
-            System.err.println("Setting default value of 100% of dropping");
-            ConfigValues.DROP_CHANCE.setValue(100.f);
+            ioException.printStackTrace();
         }
     }
 }
