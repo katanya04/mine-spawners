@@ -41,7 +41,6 @@ public class SpawnerDrops {
                         NumberRange.IntRange.atLeast(1))));
 
                 ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.create();
-                pickaxeWithSilktouch.tag(registries.getOrThrow(RegistryKeys.ITEM), ItemTags.PICKAXES);
                 pickaxeWithSilktouch.subPredicate(ItemSubPredicateTypes.ENCHANTMENTS, enchantmentsPredicate);
 
                 NbtCompound removeDelayAndCoords = new NbtCompound();
