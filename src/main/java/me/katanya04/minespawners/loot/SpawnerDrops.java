@@ -18,7 +18,6 @@ import net.minecraft.nbt.NbtShort;
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.predicate.item.EnchantmentPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.tag.ItemTags;
 
 /**
  * Modification of the vanilla spawner loot table
@@ -28,7 +27,6 @@ public class SpawnerDrops {
         LootTableEvents.MODIFY.register((resourceManager, lootManager, id, tableBuilder, source) -> {
             if (Blocks.SPAWNER.getLootTableId().equals(id) && source.isBuiltin()) {
                 ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.create();
-                pickaxeWithSilktouch.tag(ItemTags.PICKAXES);
                 pickaxeWithSilktouch.enchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, NumberRange.IntRange.atLeast(1)));
 
                 NbtCompound blockEntityTag = new NbtCompound();
