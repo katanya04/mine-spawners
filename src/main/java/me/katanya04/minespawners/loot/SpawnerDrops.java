@@ -17,14 +17,12 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtShort;
 import net.minecraft.predicate.NumberRange;
+import net.minecraft.predicate.component.ComponentPredicateTypes;
+import net.minecraft.predicate.component.ComponentsPredicate;
 import net.minecraft.predicate.item.EnchantmentPredicate;
 import net.minecraft.predicate.item.EnchantmentsPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.predicate.item.ItemSubPredicateTypes;
-import net.minecraft.registry.BuiltinRegistries;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.ItemTags;
 
 import java.util.List;
 
@@ -41,7 +39,8 @@ public class SpawnerDrops {
                         NumberRange.IntRange.atLeast(1))));
 
                 ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.create();
-                pickaxeWithSilktouch.subPredicate(ItemSubPredicateTypes.ENCHANTMENTS, enchantmentsPredicate);
+                pickaxeWithSilktouch.components(ComponentsPredicate.Builder.create()
+                        .partial(ComponentPredicateTypes.ENCHANTMENTS, enchantmentsPredicate).build());
 
                 NbtCompound removeDelayAndCoords = new NbtCompound();
                 removeDelayAndCoords.put("Delay", NbtShort.of((short) -1));
