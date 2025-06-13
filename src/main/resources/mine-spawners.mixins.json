@@ -6,8 +6,9 @@
   "mixins": [
     "SpawnerBlockDropsXpMixin",
     "SpawnerBlockPermissionsMixin",
-    "UpdateSpawnPotentialsMixin",
-    "TrialSpawnerCorrectToolMixin"
+    "TrialSpawnerCorrectToolMixin",
+    "TrialSpawnerTooltipMixin",
+    "UpdateSpawnPotentialsMixin"
   ],
   "server": [],
   "injectors": {
