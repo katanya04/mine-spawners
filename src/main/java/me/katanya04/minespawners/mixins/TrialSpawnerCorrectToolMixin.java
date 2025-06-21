@@ -13,11 +13,11 @@ import org.spongepowered.asm.mixin.injection.Slice;
 public class TrialSpawnerCorrectToolMixin {
 
     @ModifyArg(method = "<clinit>", at = @At(value = "INVOKE",
-        target = "Lnet/minecraft/block/Blocks;register(Ljava/lang/String;Ljava/util/function/Function;Lnet/minecraft/block/AbstractBlock$Settings;)Lnet/minecraft/block/Block;"
-        ), slice = @Slice(
-                from = @At(value = "CONSTANT", args = "stringValue=trial_spawner"),
-                to = @At(value = "CONSTANT", args = "stringValue=vault")
-        ), index = 2
+            target = "Lnet/minecraft/block/Blocks;register(Ljava/lang/String;Ljava/util/function/Function;Lnet/minecraft/block/AbstractBlock$Settings;)Lnet/minecraft/block/Block;"
+    ), slice = @Slice(
+            from = @At(value = "CONSTANT", args = "stringValue=trial_spawner"),
+            to = @At(value = "CONSTANT", args = "stringValue=vault")
+    ), index = 2
     )
     private static AbstractBlock.Settings injected(AbstractBlock.Settings settings) {
         return settings.requiresTool();
