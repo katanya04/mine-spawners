@@ -43,6 +43,6 @@ public class FloatConfigValue extends ConfigValue<Float> implements LootNumberPr
 
     @Override
     public Codec<Float> getCodec() {
-        return Codecs.POSITIVE_FLOAT;
+        return Codec.FLOAT;
     }
 }

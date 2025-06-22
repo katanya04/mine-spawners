@@ -79,4 +79,10 @@ public class ConfigScreen extends GameOptionsScreen {
         super.refreshWidgetPositions();
         this.pickaxesList.position(this.width, this.layout);
     }
+
+    @Override
+    public void close() {
+        SimpleConfig.saveToFile();
+        super.close();
+    }
 }

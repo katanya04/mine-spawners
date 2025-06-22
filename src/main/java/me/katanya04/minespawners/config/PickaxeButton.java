@@ -30,7 +30,6 @@ public class PickaxeButton extends ButtonWidget {
                         blacklistedPickaxes.add(pickaxe.toString());
                     }
                     SimpleConfig.BLACKLISTED_PICKAXES.setValue(blacklistedPickaxes);
-                    SimpleConfig.saveToFile();
                 },
                 supplier ->
                         MutableText.of(new PlainTextContent.Literal(pickaxe.getName().getString()))
