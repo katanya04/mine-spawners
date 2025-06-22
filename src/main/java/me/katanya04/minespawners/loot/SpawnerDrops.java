@@ -1,14 +1,17 @@
 package me.katanya04.minespawners.loot;
 
 import me.katanya04.minespawners.config.SimpleConfig;
+import me.katanya04.minespawners.loot.conditions.MatchToolWithDynamicTag;
 import me.katanya04.minespawners.loot.functions.CopyDataComponentFunction;
 import me.katanya04.minespawners.loot.functions.SetDataComponentFunction;
+import me.katanya04.minespawners.tags.DynamicTags;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
+import net.minecraft.loot.condition.InvertedLootCondition;
 import net.minecraft.loot.condition.MatchToolLootCondition;
 import net.minecraft.loot.condition.RandomChanceLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
@@ -54,7 +57,8 @@ public class SpawnerDrops {
                                 .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponentTypes.BLOCK_ENTITY_DATA))
                         .apply(SetDataComponentFunction.builder(removeDelayAndCoords, DataComponentTypes.BLOCK_ENTITY_DATA))
                         .conditionally(MatchToolLootCondition.builder(pickaxeWithSilktouch))
-                        .conditionally(RandomChanceLootCondition.builder(SimpleConfig.DROP_CHANCE));
+                        .conditionally(RandomChanceLootCondition.builder(SimpleConfig.DROP_CHANCE))
+                        .conditionally(InvertedLootCondition.builder(MatchToolWithDynamicTag.toolMatches(ItemPredicate.Builder.create(), DynamicTags.BLACKLISTED)));
 
                 // Add the loot pool to the loot table
                 tableBuilder.pool(pool);

@@ -4,21 +4,18 @@ import me.katanya04.minespawners.config.SimpleConfig;
 import me.katanya04.minespawners.loot.LootRegistration;
 import me.katanya04.minespawners.loot.SpawnerDrops;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.loader.impl.util.log.LogCategory;
 
 /**
  * Entrypoint for the mod
  */
 public class Main implements ModInitializer {
     public static final String MOD_ID = "mine_spawners";
+    public static final LogCategory logCategory = LogCategory.create("Mine Spawners");
     @Override
     public void onInitialize() {
         LootRegistration.register();
         SpawnerDrops.setDrops();
-        try {
-            SimpleConfig.initializeConfig();
-        } catch (Exception ioException) {
-            ioException.printStackTrace();
-            throw new RuntimeException("IO exception while accessing config file for minespawners mod: " + ioException);
-        }
+        SimpleConfig.initializeConfig();
     }
 }

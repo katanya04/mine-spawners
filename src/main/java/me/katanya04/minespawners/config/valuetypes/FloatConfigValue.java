@@ -1,19 +1,17 @@
-package me.katanya04.minespawners.config;
+package me.katanya04.minespawners.config.valuetypes;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.katanya04.minespawners.Main;
+import me.katanya04.minespawners.config.SimpleConfig;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.provider.number.LootNumberProvider;
 import net.minecraft.loot.provider.number.LootNumberProviderType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Range;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.dynamic.Codecs;
 
 /**
  * Config value that holds a float as its value
@@ -25,36 +23,12 @@ public class FloatConfigValue extends ConfigValue<Float> implements LootNumberPr
     private static final LootNumberProviderType LOOT_NUMBER_PROVIDER_TYPE =
         Registry.register(Registries.LOOT_NUMBER_PROVIDER_TYPE, Identifier.of(Main.MOD_ID, "from_config"),
                 new LootNumberProviderType(LOOT_CODEC));
-
-    protected final Range<Float> range;
-    public FloatConfigValue(String key, Float defValue, String tooltip, float min, float max) {
-        super(key, defValue, tooltip);
-        this.range = new Range<>(min, max);
+    public FloatConfigValue(String key, Float defValue, float min, float max) {
+        super(key, defValue, (value) -> value >= min && value <= max);
     }
 
-    @Override
-    public void setValue(@NotNull Float value) {
-        if (range.contains(value))
-            this.value = value;
-    }
-
-    @Override
-    Float jsonToValue(JsonElement json) {
-        return json.getAsFloat();
-    }
-
-    @Override
-    JsonElement valueToJson() {
-        return new JsonPrimitive(this.getValue());
-    }
-
-    @Override
-    Float fromString(String value) {
-        try {
-            return Float.parseFloat(value);
-        } catch (Exception ex) {
-            return this.getValue();
-        }
+    public void setValue(double value) {
+        setValue(Float.valueOf((float) value));
     }
 
     @Override
@@ -65,5 +39,10 @@ public class FloatConfigValue extends ConfigValue<Float> implements LootNumberPr
     @Override
     public LootNumberProviderType getType() {
         return LOOT_NUMBER_PROVIDER_TYPE;
+    }
+
+    @Override
+    public Codec<Float> getCodec() {
+        return Codecs.POSITIVE_FLOAT;
     }
 }

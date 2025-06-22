@@ -1,5 +1,6 @@
 package me.katanya04.minespawners.mixins;
 
+import me.katanya04.minespawners.tags.DynamicTags;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SpawnerBlock;
 import net.minecraft.enchantment.Enchantment;
@@ -26,7 +27,7 @@ public class SpawnerBlockDropsXpMixin {
         Optional<Registry<Enchantment>> enchantmentRegistry = world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT);
         enchantmentRegistry.flatMap(enchantments -> enchantments.getEntry(Identifier.ofVanilla("silk_touch")))
                 .ifPresent(silkTouch -> {
-                    if (tool.getEnchantments().getEnchantments().contains(silkTouch))
+                    if (tool.getEnchantments().getEnchantments().contains(silkTouch) && tool.isSuitableFor(state) && !DynamicTags.isInTag(tool, DynamicTags.BLACKLISTED))
                         ci.cancel();
                 });
     }

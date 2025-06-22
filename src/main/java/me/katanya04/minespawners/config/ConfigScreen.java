@@ -3,70 +3,80 @@ package me.katanya04.minespawners.config;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.tooltip.Tooltip;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.SliderWidget;
-import net.minecraft.client.gui.widget.TextWidget;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.PlainTextContent;
+import net.minecraft.client.gui.screen.option.GameOptionsScreen;
+import net.minecraft.client.gui.widget.OptionListWidget;
+import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
+import net.minecraft.client.option.SimpleOption;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.item.Item;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.util.List;
 
 /**
- * Configuration screen of the mod
+ * The mod configuration screen, accesible from the "Mods" button in the main menu.
+ * The configuration applies to clientside/single player... When using the mod serverside
+ * only, just modify the value on the config toml file.
  */
 @Environment(EnvType.CLIENT)
-public class ConfigScreen extends Screen {
-    static final NumberFormat formatter = NumberFormat.getInstance(Locale.US);
-    static {
-        formatter.setMaximumFractionDigits(2);
-        formatter.setRoundingMode(RoundingMode.HALF_UP);
+public class ConfigScreen extends GameOptionsScreen {
+    protected final SimpleOption<Double> slider;
+    protected final List<Item> pickaxes;
+    protected PickaxesList pickaxesList;
+
+    protected ConfigScreen(Screen previousScreen) {
+        super(previousScreen, null, Text.translatable("config.title"));
+        this.slider = new SimpleOption<>(
+                "config.drop_chance",
+                SimpleOption.emptyTooltip(),
+                ConfigScreen::percentValueLabel,
+                SimpleOption.DoubleSliderCallbacks.INSTANCE,
+                (double) SimpleConfig.DROP_CHANCE.getValue(),
+                SimpleConfig.DROP_CHANCE::setValue
+        );
+        this.pickaxes = SimpleConfig.getAllPickaxes().stream().sorted(
+                (p1, p2) -> weirdRounding(getHarvestLevel(p1) - getHarvestLevel(p2))
+        ).toList();
     }
-    public Screen parent;
-    public ConfigScreen(Screen parent) {
-        super(Text.of("Minespawners Configuration"));
-        this.parent = parent;
+
+    protected int weirdRounding(double x) {
+        return (int) (x > 0 ? Math.ceil(x) : Math.floor(x));
+    }
+
+    protected double getHarvestLevel(Item pickaxe) {
+        return (pickaxe.getDefaultStack().get(DataComponentTypes.TOOL) == null ?
+                1 : pickaxe.getDefaultStack().get(DataComponentTypes.TOOL).rules().stream()
+                .filter(r -> r.speed().isPresent()).mapToDouble(r -> r.speed().get()).max().orElse(1))
+                * (pickaxe.getDefaultStack().get(DataComponentTypes.MAX_DAMAGE) == null ?
+                1 : pickaxe.getDefaultStack().get(DataComponentTypes.MAX_DAMAGE));
+    }
+
+    private static Text percentValueLabel(Text p_231898_, double p_231899_) {
+        return Text.translatable("options.percent_value", p_231898_, (int)(p_231899_ * 100.0));
     }
 
     @Override
-    public void close() {
-        try {
-            SimpleConfig.saveToFile();
-        } catch (IOException e) {
-            System.err.println("IO Exception while saving minespawners config values: " + e);
-            e.printStackTrace();
-        }
-        if (this.client != null)
-            this.client.setScreen(this.parent);
+    protected void addOptions() {
+        this.body.addSingleOptionEntry(slider);
     }
 
     @Override
-    protected void init() {
-        TextWidget titleDrop = new TextWidget(MutableText.of(new PlainTextContent.Literal("Drop chance: ")), this.client.textRenderer);
-        titleDrop.setX(15);
-        titleDrop.setY(15);
-        this.addDrawableChild(titleDrop);
+    protected void initBody() {
+        this.body = this.layout.addBody(new OptionListWidget(this.client, this.width, this) {
+            @Override
+            public void position(int width, @NotNull ThreePartsLayoutWidget layout) {
+                this.position(width, ConfigScreen.this.slider.createWidget(null).getHeight() + 10, layout.getHeaderHeight());
+            }
+        });
+        this.body.setHeight(slider.createWidget(null).getHeight() + 10);
+        this.pickaxesList = this.layout.addBody(new PickaxesList(this, this.client));
+        this.addOptions();
+    }
 
-        SliderWidget dropChance = new SliderWidget(titleDrop.getX() + titleDrop.getWidth() + 15, 15 + this.client.textRenderer.fontHeight / 2 - 20 / 2, 100, 20,
-                MutableText.of(new PlainTextContent.Literal(formatter.format(SimpleConfig.DROP_CHANCE.getValue() * 100) + " %")), SimpleConfig.DROP_CHANCE.getValue()) {
-            @Override
-            protected void updateMessage() {
-                this.setMessage(MutableText.of(new PlainTextContent.Literal(formatter.format(SimpleConfig.DROP_CHANCE.getValue() * 100) + " %")));
-            }
-            @Override
-            protected void applyValue() {
-                SimpleConfig.DROP_CHANCE.setValue(Float.parseFloat(formatter.format(this.value)));
-            }
-        };
-        dropChance.setTooltip(Tooltip.of(Text.of(SimpleConfig.DROP_CHANCE.tooltip), Text.of(SimpleConfig.DROP_CHANCE.tooltip)));
-        this.addDrawableChild(dropChance);
-        ButtonWidget returnButton = ButtonWidget.builder(Text.of("Done"), (btn) -> this.close()).dimensions(
-                width / 2 - 40, (int) (height * 0.9 - 20), 80, 20).tooltip(Tooltip.of(Text.literal(
-                        "Press to save configuration and return to previous menu"))).build();
-        this.addDrawableChild(returnButton);
+    @Override
+    protected void refreshWidgetPositions() {
+        super.refreshWidgetPositions();
+        this.pickaxesList.position(this.width, this.layout);
     }
 }

@@ -1,10 +1,12 @@
-package me.katanya04.minespawners.config;
+package me.katanya04.minespawners.config.valuetypes;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Key-Value element with a tooltip that gets displayed when seen on a screen. Can also have a condition that gets check
@@ -14,37 +16,35 @@ import java.util.Objects;
 public abstract class ConfigValue<T> {
     protected final String key;
     protected T value;
-    protected final String tooltip;
-    public ConfigValue(String key, T defValue, String tooltip) {
+    protected final @Nullable Predicate<T> checker;
+    public ConfigValue(String key, T defValue) {
+        this(key, defValue, null);
+    }
+    public ConfigValue(String key, T defValue, @Nullable Predicate<T> checker) {
         this.key = key;
         this.value = defValue;
-        this.tooltip = tooltip;
+        this.checker = checker;
     }
     public String getKey() {
         return key;
     }
-    abstract T jsonToValue(JsonElement json);
-    abstract JsonElement valueToJson();
-    abstract T fromString(String value);
     public T getValue() {
         return value;
     }
     public void setValue(@NotNull T value) {
-        if (Objects.equals(value.getClass(), this.value.getClass()))
+        if (checker == null || checker.test(value))
             this.value = value;
     }
-    public void setValue(String value) {
-        setValue(fromString(value));
-    }
     public void setValueFromJson(@NotNull JsonObject json) {
-        T newValue = jsonToValue(json.get(this.getKey()));
+        T newValue = getCodec().parse(JsonOps.INSTANCE, json.get(this.getKey())).getOrThrow();
         setValue(newValue);
     }
     public void setValueToJson(@NotNull JsonObject json) {
-        json.add(this.getKey(), valueToJson());
+        json.add(this.getKey(), getCodec().encodeStart(JsonOps.INSTANCE, this.value).getOrThrow());
     }
     @Override
     public String toString() {
         return this.getKey() + ": " + this.value;
     }
+    public abstract Codec<T> getCodec();
 }
