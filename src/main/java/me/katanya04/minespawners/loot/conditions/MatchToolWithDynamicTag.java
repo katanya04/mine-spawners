@@ -1,7 +1,7 @@
 package me.katanya04.minespawners.loot.conditions;
 
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.google.common.collect.ImmutableSet;
+import com.google.gson.*;
 import me.katanya04.minespawners.loot.LootRegistration;
 import me.katanya04.minespawners.tags.DynamicTags;
 import net.minecraft.item.Item;
@@ -9,47 +9,59 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.condition.LootConditionType;
 import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameter;
 import net.minecraft.loot.context.LootContextParameters;
 import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.util.context.ContextParameter;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.tag.TagKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.JsonSerializer;
+import net.minecraft.util.registry.Registry;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
  * A Loot Item Condition that checks if the tool used matches the given predicate and has a specified {@link me.katanya04.minespawners.tags.DynamicTags}
- * @param predicate the predicate to check
- * @param dynamicTag the dynamic tag to check
  */
-public record MatchToolWithDynamicTag(Optional<ItemPredicate> predicate, TagKey<Item> dynamicTag) implements LootCondition {
-    public static final MapCodec<MatchToolWithDynamicTag> CODEC = RecordCodecBuilder.mapCodec(
-            instance -> instance.group(
-                    ItemPredicate.CODEC.optionalFieldOf("predicate").forGetter(MatchToolWithDynamicTag::predicate),
-                    TagKey.codec(Registries.ITEM.getKey()).fieldOf("dynamicTag").forGetter(MatchToolWithDynamicTag::dynamicTag)
-            ).apply(instance, MatchToolWithDynamicTag::new)
-    );
+public class MatchToolWithDynamicTag implements LootCondition {
+    final ItemPredicate predicate;
+    final TagKey<Item> dynamicTag;
+
+    public MatchToolWithDynamicTag(ItemPredicate predicate, TagKey<Item> dynamicTag) {
+        this.predicate = predicate;
+        this.dynamicTag = dynamicTag;
+    }
 
     @Override
-    public @NotNull LootConditionType getType() {
+    public LootConditionType getType() {
         return LootRegistration.matchToolWithDynamicTagType;
     }
 
     @Override
-    public @NotNull Set<ContextParameter<?>> getAllowedParameters() {
-        return Set.of(LootContextParameters.TOOL);
+    public Set<LootContextParameter<?>> getRequiredParameters() {
+        return ImmutableSet.of(LootContextParameters.TOOL);
     }
 
-    @Override
     public boolean test(LootContext lootContext) {
         ItemStack itemstack = lootContext.get(LootContextParameters.TOOL);
-        return itemstack != null && (this.predicate.isEmpty() || this.predicate.get().test(itemstack)) &&
-                DynamicTags.isInTag(itemstack, this.dynamicTag);
+        return itemstack != null && (this.predicate.test(itemstack)) && DynamicTags.isInTag(itemstack, this.dynamicTag);
     }
 
-    public static LootCondition.Builder toolMatches(ItemPredicate.Builder predicate, TagKey<Item> dynamicTag) {
-        return () -> new MatchToolWithDynamicTag(Optional.of(predicate.build()), dynamicTag);
+    public static LootCondition.Builder builder(ItemPredicate.Builder predicate, TagKey<Item> dynamicTag) {
+        return () -> new MatchToolWithDynamicTag(predicate.build(), dynamicTag);
+    }
+
+    public static class Serializer implements JsonSerializer<MatchToolWithDynamicTag> {
+        public void toJson(JsonObject jsonObject, MatchToolWithDynamicTag matchToolLootCondition, JsonSerializationContext jsonSerializationContext) {
+            jsonObject.add("predicate", matchToolLootCondition.predicate.toJson());
+            jsonObject.add("dynamicTag", new JsonPrimitive(matchToolLootCondition.dynamicTag.id().toString()));
+        }
+
+        public MatchToolWithDynamicTag fromJson(JsonObject jsonObject, JsonDeserializationContext jsonDeserializationContext) {
+            ItemPredicate itemPredicate = ItemPredicate.fromJson(jsonObject.get("predicate"));
+            Identifier dynamicTagIdentifier = new Identifier(JsonHelper.getString(jsonObject, "dynamicTag"));
+            TagKey<Item> dynamicTag = TagKey.of(Registry.ITEM_KEY, dynamicTagIdentifier);
+            return new MatchToolWithDynamicTag(itemPredicate, dynamicTag);
+        }
     }
 }

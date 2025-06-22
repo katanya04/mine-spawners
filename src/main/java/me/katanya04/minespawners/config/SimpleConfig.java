@@ -9,17 +9,14 @@ import me.katanya04.minespawners.Main;
 import me.katanya04.minespawners.config.valuetypes.ConfigValue;
 import me.katanya04.minespawners.config.valuetypes.FloatConfigValue;
 import me.katanya04.minespawners.config.valuetypes.ListConfigValue;
+import net.fabricmc.fabric.api.tag.convention.v1.ConventionalItemTags;
 import net.fabricmc.loader.impl.util.log.Log;
-import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.item.PickaxeItem;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.Registry;
 
 import java.io.File;
 import java.io.IOException;
@@ -87,20 +84,17 @@ public class SimpleConfig {
     };
 
     static Set<Item> getAllPickaxes() {
-        return Registries.ITEM.stream().filter(item -> isPickaxe(item.getDefaultStack())).collect(Collectors.toSet());
+        return Registry.ITEM.stream().filter(item -> isPickaxe(item.getDefaultStack())).collect(Collectors.toSet());
     }
 
     private static boolean isPickaxe(String name) {
-        return isPickaxe(Registries.ITEM.get(Identifier.tryParse(name)).getDefaultStack());
+        return isPickaxe(Registry.ITEM.get(Identifier.tryParse(name)).getDefaultStack());
     }
 
     private static boolean isPickaxe(ItemStack stack) {
-        return  stack.isIn(ItemTags.PICKAXES) ||
+        return  stack.isIn(ConventionalItemTags.PICKAXES) ||
                 stack.isSuitableFor(Blocks.SPAWNER.getDefaultState()) ||
-                (stack.get(DataComponentTypes.TOOL) != null && stack.get(DataComponentTypes.TOOL).rules().stream()
-                        .anyMatch(r -> (r.blocks() instanceof RegistryEntryList.Named<Block> blocks) &&
-                                blocks.getTag().id().equals(BlockTags.PICKAXE_MINEABLE.id()))
-                );
+                stack.getItem() instanceof PickaxeItem;
     }
 
     public static void initializeConfig() {

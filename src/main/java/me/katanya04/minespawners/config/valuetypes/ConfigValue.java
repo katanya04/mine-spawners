@@ -6,6 +6,7 @@ import com.mojang.serialization.JsonOps;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -36,11 +37,15 @@ public abstract class ConfigValue<T> {
             this.value = value;
     }
     public void setValueFromJson(@NotNull JsonObject json) {
-        T newValue = getCodec().parse(JsonOps.INSTANCE, json.get(this.getKey())).getOrThrow();
+        T newValue = getCodec().parse(JsonOps.INSTANCE, json.get(this.getKey())).getOrThrow(false, str -> {
+            throw new RuntimeException(str);
+        });
         setValue(newValue);
     }
     public void setValueToJson(@NotNull JsonObject json) {
-        json.add(this.getKey(), getCodec().encodeStart(JsonOps.INSTANCE, this.value).getOrThrow());
+        json.add(this.getKey(), getCodec().encodeStart(JsonOps.INSTANCE, this.value).getOrThrow(false, str -> {
+            throw new RuntimeException(str);
+        }));
     }
     @Override
     public String toString() {

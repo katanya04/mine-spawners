@@ -4,15 +4,16 @@ import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.screen.narration.NarrationPart;
+import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -24,28 +25,25 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
     public static final int BUTTON_MARGIN = 10;
     private final ConfigScreen configScreen;
 
-    public PickaxesList(ConfigScreen configScreen, MinecraftClient minecraft) {
-        super(minecraft, configScreen.width, configScreen.layout.getContentHeight() - (configScreen.slider.createWidget(null).getHeight() + 10),
-                configScreen.layout.getHeaderHeight() + configScreen.slider.createWidget(null).getHeight() + 10, BUTTON_SIZE + BUTTON_MARGIN);
+    public PickaxesList(ConfigScreen configScreen, MinecraftClient minecraft, ClickableWidget slider) {
+        super(  minecraft,
+                configScreen.width,
+                configScreen.height - (slider.y + slider.getHeight()),
+                slider.y + slider.getHeight() + 10,
+                configScreen.height - 37,
+                BUTTON_SIZE + BUTTON_MARGIN
+        );
         this.configScreen = configScreen;
         setEntries();
     }
 
     protected void setEntries() {
         this.clearEntries();
-        this.addEntry(new TitleEntry(Text.translatable("config.blacklisted_pickaxes")));
+        this.addEntry(new TitleEntry(new TranslatableText("config.blacklisted_pickaxes")));
         int initialX = (getRowWidth() - getButtonsPerRow() * (BUTTON_MARGIN + BUTTON_SIZE) + BUTTON_MARGIN) / 2 + 25;
         for (int i = 0; i < configScreen.pickaxes.size(); i += getButtonsPerRow()) {
             this.addEntry(new RowEntry(configScreen.pickaxes.subList(i, Math.min(i + getButtonsPerRow(), configScreen.pickaxes.size())), initialX));
         }
-    }
-
-    @Override
-    public void position(int width, ThreePartsLayoutWidget layout) {
-        this.position(width, layout.getContentHeight() - (configScreen.slider.createWidget(null).getHeight() + 10),
-                layout.getHeaderHeight() + configScreen.slider.createWidget(null).getHeight() + 10);
-        setEntries();
-        refreshScroll();
     }
 
     @Override
@@ -68,7 +66,7 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
             this.buttons = new PickaxeButton[pickaxes.size()];
             int x = initialX, i = 0;
             for (Item pickaxe : pickaxes) {
-                buttons[i++] = new PickaxeButton(x, 0, BUTTON_SIZE, pickaxe, PickaxesList.this.configScreen);
+                buttons[i++] = new PickaxeButton(x, 0, BUTTON_SIZE, pickaxe, PickaxesList.this.configScreen, PickaxesList.this.client);
                 x += BUTTON_SIZE + BUTTON_MARGIN;
             }
         }
@@ -80,11 +78,11 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
 
         @Override
         public void render(
-                DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress
+                MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta
         ) {
             Arrays.stream(this.buttons).forEach(b -> {
-                b.setY(y);
-                b.render(context, mouseX, mouseY, tickProgress);
+                b.y = y;
+                b.render(matrices, mouseX, mouseY, tickDelta);
             });
         }
 
@@ -121,11 +119,11 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
 
         @Override
         public void render(
-                DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress
+                MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta
         ) {
-            context.drawText(
-                    PickaxesList.this.client.textRenderer, this.title, PickaxesList.this.width / 2 - this.width / 2,
-                    y + entryHeight / 2 - PickaxesList.this.client.textRenderer.fontHeight / 2, -1, true
+            PickaxesList.this.client.textRenderer.draw(
+                    matrices, this.title, (float) PickaxesList.this.width / 2 - (float) this.width / 2,
+                    y + (float) entryHeight / 2 - (float) PickaxesList.this.client.textRenderer.fontHeight / 2, -1
             );
         }
 

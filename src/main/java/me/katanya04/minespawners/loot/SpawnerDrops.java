@@ -2,66 +2,55 @@ package me.katanya04.minespawners.loot;
 
 import me.katanya04.minespawners.config.SimpleConfig;
 import me.katanya04.minespawners.loot.conditions.MatchToolWithDynamicTag;
-import me.katanya04.minespawners.loot.functions.CopyDataComponentFunction;
-import me.katanya04.minespawners.loot.functions.SetDataComponentFunction;
+import me.katanya04.minespawners.loot.conditions.RandomChanceFromProviderCondition;
 import me.katanya04.minespawners.tags.DynamicTags;
-import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
+import net.fabricmc.fabric.api.loot.v2.LootTableEvents;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.condition.InvertedLootCondition;
 import net.minecraft.loot.condition.MatchToolLootCondition;
-import net.minecraft.loot.condition.RandomChanceLootCondition;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.function.CopyNbtLootFunction;
+import net.minecraft.loot.function.SetNbtLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
 import net.minecraft.nbt.NbtShort;
 import net.minecraft.predicate.NumberRange;
-import net.minecraft.predicate.component.ComponentPredicateTypes;
-import net.minecraft.predicate.component.ComponentsPredicate;
 import net.minecraft.predicate.item.EnchantmentPredicate;
-import net.minecraft.predicate.item.EnchantmentsPredicate;
 import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.RegistryKeys;
-
-import java.util.List;
 
 /**
  * Modification of the vanilla spawner loot table
  */
 public class SpawnerDrops {
     public static void setDrops() {
-        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-            if ((Blocks.SPAWNER.getLootTableKey().get() == key || Blocks.TRIAL_SPAWNER.getLootTableKey().get() == key) && source.isBuiltin()) {
-
-                var enchantmentsPredicate = EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(
-                        registries.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH),
-                        NumberRange.IntRange.atLeast(1))));
-
+        LootTableEvents.MODIFY.register((key, lootManager, identifier, builder, source) -> {
+            if (Blocks.SPAWNER.getLootTableId().equals(identifier) && source.isBuiltin()) {
                 ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.create();
-                pickaxeWithSilktouch.components(ComponentsPredicate.Builder.create()
-                        .partial(ComponentPredicateTypes.ENCHANTMENTS, enchantmentsPredicate).build());
+                pickaxeWithSilktouch.enchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, NumberRange.IntRange.atLeast(1)));
 
+                NbtCompound blockEntityTag = new NbtCompound();
                 NbtCompound removeDelayAndCoords = new NbtCompound();
                 removeDelayAndCoords.put("Delay", NbtShort.of((short) -1));
                 removeDelayAndCoords.put("x", NbtInt.of(0));
                 removeDelayAndCoords.put("y", NbtInt.of(0));
                 removeDelayAndCoords.put("z", NbtInt.of(0));
+                blockEntityTag.put("BlockEntityTag", removeDelayAndCoords);
 
-                LootPool.Builder pool = LootPool.builder()
-                        .with(ItemEntry.builder(Blocks.SPAWNER.getLootTableKey().get() == key ? Items.SPAWNER : Items.TRIAL_SPAWNER))
-                        .apply(CopyDataComponentFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
-                                .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponentTypes.BLOCK_ENTITY_DATA))
-                        .apply(SetDataComponentFunction.builder(removeDelayAndCoords, DataComponentTypes.BLOCK_ENTITY_DATA))
+                LootPool.Builder pool = LootPool.builder().with(ItemEntry.builder(Items.SPAWNER)
+                        .apply(CopyNbtLootFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                                .withOperation("{}", "BlockEntityTag", CopyNbtLootFunction.Operator.REPLACE))
+                        .apply(SetNbtLootFunction.builder(blockEntityTag))
                         .conditionally(MatchToolLootCondition.builder(pickaxeWithSilktouch))
-                        .conditionally(RandomChanceLootCondition.builder(SimpleConfig.DROP_CHANCE))
-                        .conditionally(InvertedLootCondition.builder(MatchToolWithDynamicTag.toolMatches(ItemPredicate.Builder.create(), DynamicTags.BLACKLISTED)));
+                        .conditionally(RandomChanceFromProviderCondition.builder(SimpleConfig.DROP_CHANCE))
+                        .conditionally(InvertedLootCondition.builder(MatchToolWithDynamicTag.builder(ItemPredicate.Builder.create(), DynamicTags.BLACKLISTED)))
+                );
 
                 // Add the loot pool to the loot table
-                tableBuilder.pool(pool);
+                builder.pool(pool);
             }
         });
     }
