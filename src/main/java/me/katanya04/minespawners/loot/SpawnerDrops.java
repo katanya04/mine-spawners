@@ -4,17 +4,22 @@ import me.katanya04.minespawners.config.SimpleConfig;
 import me.katanya04.minespawners.loot.conditions.MatchToolWithDynamicTag;
 import me.katanya04.minespawners.loot.functions.CopyDataComponentFunction;
 import me.katanya04.minespawners.loot.functions.SetDataComponentFunction;
+import me.katanya04.minespawners.loot.lootnbtprovider.ContextAndBlockEntityLootNbtProvider;
 import me.katanya04.minespawners.tags.DynamicTags;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootPool;
 import net.minecraft.loot.condition.InvertedLootCondition;
 import net.minecraft.loot.condition.MatchToolLootCondition;
 import net.minecraft.loot.condition.RandomChanceLootCondition;
+import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.entry.ItemEntry;
+import net.minecraft.loot.function.CopyNbtLootFunction;
 import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtInt;
@@ -35,7 +40,7 @@ import java.util.List;
 public class SpawnerDrops {
     public static void setDrops() {
         LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-            if ((Blocks.SPAWNER.getLootTableKey().get() == key || Blocks.TRIAL_SPAWNER.getLootTableKey().get() == key) && source.isBuiltin()) {
+            if ((Blocks.SPAWNER.getLootTableKey().map(v -> v == key).orElse(false) || Blocks.TRIAL_SPAWNER.getLootTableKey().map(v -> v == key).orElse(false)) && source.isBuiltin()) {
 
                 var enchantmentsPredicate = EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(
                         registries.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH),
@@ -51,11 +56,13 @@ public class SpawnerDrops {
                 removeDelayAndCoords.put("y", NbtInt.of(0));
                 removeDelayAndCoords.put("z", NbtInt.of(0));
 
+                BlockEntityType<?> type = Blocks.SPAWNER.getLootTableKey().get() == key ? BlockEntityType.MOB_SPAWNER : BlockEntityType.TRIAL_SPAWNER;
+
                 LootPool.Builder pool = LootPool.builder()
                         .with(ItemEntry.builder(Blocks.SPAWNER.getLootTableKey().get() == key ? Items.SPAWNER : Items.TRIAL_SPAWNER))
-                        .apply(CopyDataComponentFunction.builder(ContextLootNbtProvider.BLOCK_ENTITY)
+                        .apply(CopyDataComponentFunction.builder(ContextAndBlockEntityLootNbtProvider.fromBlockEntityTarget(LootContext.BlockEntityReference.BLOCK_ENTITY), type)
                                 .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponentTypes.BLOCK_ENTITY_DATA))
-                        .apply(SetDataComponentFunction.builder(removeDelayAndCoords, DataComponentTypes.BLOCK_ENTITY_DATA))
+                        .apply(SetDataComponentFunction.builder(DataComponentTypes.BLOCK_ENTITY_DATA, TypedEntityData.create(type, removeDelayAndCoords), SetDataComponentFunction.Mode.MERGE))
                         .conditionally(MatchToolLootCondition.builder(pickaxeWithSilktouch))
                         .conditionally(RandomChanceLootCondition.builder(SimpleConfig.DROP_CHANCE))
                         .conditionally(InvertedLootCondition.builder(MatchToolWithDynamicTag.toolMatches(ItemPredicate.Builder.create(), DynamicTags.BLACKLISTED)));

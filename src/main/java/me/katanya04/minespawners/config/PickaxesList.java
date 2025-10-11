@@ -79,18 +79,16 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
         }
 
         @Override
-        public void render(
-                DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress
-        ) {
-            Arrays.stream(this.buttons).forEach(b -> {
-                b.setY(y);
-                b.render(context, mouseX, mouseY, tickProgress);
-            });
+        public @NotNull List<? extends Element> children() {
+            return Arrays.asList(this.buttons);
         }
 
         @Override
-        public @NotNull List<? extends Element> children() {
-            return Arrays.asList(this.buttons);
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            Arrays.stream(this.buttons).forEach(b -> {
+                b.setY(this.getY());
+                b.render(context, mouseX, mouseY, deltaTicks);
+            });
         }
     }
 
@@ -120,18 +118,16 @@ public class PickaxesList extends ElementListWidget<PickaxesList.Entry> {
         }
 
         @Override
-        public void render(
-                DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress
-        ) {
-            context.drawText(
-                    PickaxesList.this.client.textRenderer, this.title, PickaxesList.this.width / 2 - this.width / 2,
-                    y + entryHeight / 2 - PickaxesList.this.client.textRenderer.fontHeight / 2, -1, true
-            );
+        public @NotNull List<? extends Element> children() {
+            return List.of();
         }
 
         @Override
-        public @NotNull List<? extends Element> children() {
-            return List.of();
+        public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            context.drawText(
+                    PickaxesList.this.client.textRenderer, this.title, PickaxesList.this.width / 2 - this.width / 2,
+                    this.getY() + this.getHeight() / 2 - PickaxesList.this.client.textRenderer.fontHeight / 2, -1, true
+            );
         }
     }
 }

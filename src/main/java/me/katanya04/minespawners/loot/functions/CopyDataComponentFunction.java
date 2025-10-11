@@ -7,21 +7,24 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.katanya04.minespawners.loot.LootRegistration;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.command.argument.NbtPathArgumentType;
 import net.minecraft.component.ComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.NbtComponent;
+import net.minecraft.entity.TypedEntityData;
 import net.minecraft.item.ItemStack;
 import net.minecraft.loot.condition.LootCondition;
 import net.minecraft.loot.context.LootContext;
 import net.minecraft.loot.function.ConditionalLootFunction;
 import net.minecraft.loot.function.LootFunction;
 import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
 import net.minecraft.loot.provider.nbt.LootNbtProvider;
 import net.minecraft.loot.provider.nbt.LootNbtProviderTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.context.ContextParameter;
 import org.jetbrains.annotations.NotNull;
@@ -31,20 +34,25 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * A LootTable function that copies NBT from the source to a DataComponent of the target
+ * A LootTable function that copies NBT from the source to DataComponents of the target
  */
 public class CopyDataComponentFunction extends ConditionalLootFunction {
     public static final MapCodec<CopyDataComponentFunction> CODEC = RecordCodecBuilder.mapCodec((instance) ->
             addConditionsField(instance).and(
-                    instance.group(LootNbtProviderTypes.CODEC.fieldOf("source").forGetter((function) -> function.source),
-                    CopyOperation.CODEC.listOf().fieldOf("ops").forGetter((function) -> function.operations))
+                    instance.group(
+                            LootNbtProviderTypes.CODEC.fieldOf("source").forGetter((function) -> function.source),
+                            Registries.BLOCK_ENTITY_TYPE.getCodec().fieldOf("blockEntityType").forGetter(function -> function.blockEntityType),
+                            CopyOperation.CODEC.listOf().fieldOf("ops").forGetter((function) -> function.operations)
+                    )
             ).apply(instance, CopyDataComponentFunction::new));
     private final LootNbtProvider source;
+    private final BlockEntityType<?> blockEntityType;
     private final List<CopyOperation> operations;
 
-    CopyDataComponentFunction(List<LootCondition> conditions, LootNbtProvider source, List<CopyOperation> operations) {
+    CopyDataComponentFunction(List<LootCondition> conditions, LootNbtProvider source, BlockEntityType<?> blockEntityType, List<CopyOperation> operations) {
         super(conditions);
         this.source = source;
+        this.blockEntityType = blockEntityType;
         this.operations = List.copyOf(operations);
     }
 
@@ -62,34 +70,32 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
         NbtElement sourceTag = this.source.getNbt(context);
         if (sourceTag == null)
             return item;
-        HashMap<ComponentType<NbtComponent>, NbtCompound> tags = new HashMap<>();
+        HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags = new HashMap<>();
         this.operations.forEach((op) -> {
             if (!tags.containsKey(op.ComponentType))
-                tags.put(op.ComponentType, item.getOrDefault(op.ComponentType, NbtComponent.DEFAULT).copyNbt());
-            op.apply(tags, sourceTag);
+                tags.put(op.ComponentType, (TypedEntityData<BlockEntityType<?>>) item.getOrDefault(op.ComponentType, TypedEntityData.create(DataComponentTypes.BLOCK_ENTITY_DATA, NbtComponent.DEFAULT.copyNbt())));
+            op.apply(tags, sourceTag, blockEntityType);
         });
-        tags.forEach((type, compoundTag) -> NbtComponent.set(type, item, compoundTag));
+        tags.forEach(item::set);
 
         return item;
     }
 
-    public static Builder builder(LootNbtProvider source) {
-        return new Builder(source);
-    }
-
-    public static Builder builder(LootContext.EntityTarget target) {
-        return new Builder(ContextLootNbtProvider.fromTarget(target));
+    public static Builder builder(LootNbtProvider source, BlockEntityType<?> blockEntityType) {
+        return new Builder(source, blockEntityType);
     }
 
     public static class Builder extends ConditionalLootFunction.Builder<Builder> {
         private final LootNbtProvider source;
+        private final BlockEntityType<?> blockEntityType;
         private final List<CopyOperation> ops = Lists.newArrayList();
 
-        Builder(LootNbtProvider source) {
+        Builder(LootNbtProvider source, BlockEntityType<?> blockEntityType) {
             this.source = source;
+            this.blockEntityType = blockEntityType;
         }
 
-        public Builder withOperation(String sourcePath, String targetPath, MergeStrategy operator, ComponentType<NbtComponent> ComponentType) {
+        public Builder withOperation(String sourcePath, String targetPath, MergeStrategy operator, ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
             try {
                 this.ops.add(new CopyOperation(NbtPathArgumentType.NbtPath.parse(sourcePath),
                         NbtPathArgumentType.NbtPath.parse(targetPath), operator, ComponentType));
@@ -99,7 +105,7 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
             }
         }
 
-        public Builder withOperation(String source, String target, ComponentType<NbtComponent> ComponentType) {
+        public Builder withOperation(String source, String target, ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
             return this.withOperation(source, target, MergeStrategy.REPLACE, ComponentType);
         }
 
@@ -110,25 +116,25 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
 
         @Override
         public @NotNull LootFunction build() {
-            return new CopyDataComponentFunction(this.getConditions(), this.source, this.ops);
+            return new CopyDataComponentFunction(this.getConditions(), this.source, this.blockEntityType, this.ops);
         }
     }
 
-    record CopyOperation(NbtPathArgumentType.NbtPath sourcePath, NbtPathArgumentType.NbtPath targetPath, MergeStrategy op, ComponentType<NbtComponent> ComponentType) {
+    record CopyOperation(NbtPathArgumentType.NbtPath sourcePath, NbtPathArgumentType.NbtPath targetPath, MergeStrategy op, ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
         public static final Codec<CopyOperation> CODEC = RecordCodecBuilder.create((instance) ->
                 instance.group(NbtPathArgumentType.NbtPath.CODEC.fieldOf("source").forGetter(CopyOperation::sourcePath),
                                 NbtPathArgumentType.NbtPath.CODEC.fieldOf("target").forGetter(CopyOperation::targetPath),
                                 MergeStrategy.CODEC.fieldOf("op").forGetter(CopyOperation::op),
                                 net.minecraft.component.ComponentType.CODEC.fieldOf("ComponentType").forGetter(CopyOperation::ComponentType))
                 .apply(instance, ((nbtPath, nbtPath2, mergeStrategy, ComponentType1) ->
-                        new CopyOperation(nbtPath, nbtPath2, mergeStrategy, (ComponentType<NbtComponent>) ComponentType1)))
+                        new CopyOperation(nbtPath, nbtPath2, mergeStrategy, (ComponentType<TypedEntityData<BlockEntityType<?>>>) ComponentType1)))
         );
 
-        public void apply(HashMap<ComponentType<NbtComponent>, NbtCompound> tags, NbtElement sourceTag) {
+        public void apply(HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags, NbtElement sourceTag, BlockEntityType<?> blockEntityType) {
             try {
                 List<NbtElement> sourceNBT = this.sourcePath.get(sourceTag);
                 if (!sourceNBT.isEmpty()) {
-                    this.op.merge(tags, this.ComponentType, this.targetPath, sourceNBT);
+                    this.op.merge(tags, this.ComponentType, this.targetPath, sourceNBT, blockEntityType);
                 }
             } catch (CommandSyntaxException ignored) {}
         }
@@ -136,17 +142,19 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
 
     public enum MergeStrategy implements StringIdentifiable {
         REPLACE("replace") {
-            public void merge(HashMap<ComponentType<NbtComponent>, NbtCompound> tags,
-                              ComponentType<NbtComponent> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts) throws CommandSyntaxException {
+            public void merge(HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags,
+                              ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts,
+                              BlockEntityType<?> blockEntityType) throws CommandSyntaxException {
                 NbtElement newValue = Iterables.getLast(sourceNbts).copy();
-                tags.put(ComponentType, (NbtCompound) newValue);
-                targetPath.put(tags.get(ComponentType), newValue);
+                tags.put(ComponentType, TypedEntityData.create(blockEntityType, newValue.asCompound().get()));
+                targetPath.put(tags.get(ComponentType).copyNbtWithoutId(), newValue);
             }
         },
         APPEND("append") {
-            public void merge(HashMap<ComponentType<NbtComponent>, NbtCompound> tags,
-                              ComponentType<NbtComponent> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts) throws CommandSyntaxException {
-                List<NbtElement> list = targetPath.getOrInit(tags.get(ComponentType), NbtList::new);
+            public void merge(HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags,
+                              ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts,
+                              BlockEntityType<?> blockEntityType) throws CommandSyntaxException {
+                List<NbtElement> list = targetPath.getOrInit(tags.get(ComponentType).copyNbtWithoutId(), NbtList::new);
                 list.forEach((foundNbt) -> {
                     if (foundNbt instanceof NbtList) {
                         sourceNbts.forEach((sourceNbt) -> ((NbtList)foundNbt).add(sourceNbt.copy()));
@@ -155,19 +163,18 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
             }
         },
         MERGE("merge") {
-            public void merge(HashMap<ComponentType<NbtComponent>, NbtCompound> tags,
-                              ComponentType<NbtComponent> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts) throws CommandSyntaxException {
-                List<NbtElement> list = targetPath.getOrInit(tags.get(ComponentType), NbtCompound::new);
+            public void merge(HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags,
+                              ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts,
+                              BlockEntityType<?> blockEntityType) throws CommandSyntaxException {
+                List<NbtElement> list = targetPath.getOrInit(tags.get(ComponentType).copyNbtWithoutId(), NbtCompound::new);
                 list.forEach((foundNbt) -> {
                     if (foundNbt instanceof NbtCompound) {
                         sourceNbts.forEach((sourceNbt) -> {
                             if (sourceNbt instanceof NbtCompound) {
                                 ((NbtCompound)foundNbt).copyFrom((NbtCompound)sourceNbt);
                             }
-
                         });
                     }
-
                 });
             }
         };
@@ -175,8 +182,9 @@ public class CopyDataComponentFunction extends ConditionalLootFunction {
         public static final Codec<MergeStrategy> CODEC = StringIdentifiable.createCodec(MergeStrategy::values);
         private final String name;
 
-        public abstract void merge(HashMap<ComponentType<NbtComponent>, NbtCompound> tags,
-                                   ComponentType<NbtComponent> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts)
+        public abstract void merge(HashMap<ComponentType<TypedEntityData<BlockEntityType<?>>>, TypedEntityData<BlockEntityType<?>>> tags,
+                                   ComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType, NbtPathArgumentType.NbtPath targetPath, List<NbtElement> sourceNbts,
+                                   BlockEntityType<?> blockEntityType)
                 throws CommandSyntaxException;
 
         MergeStrategy(final String name) {
