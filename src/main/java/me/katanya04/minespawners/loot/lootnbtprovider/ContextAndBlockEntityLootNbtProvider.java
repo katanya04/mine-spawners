@@ -1,9 +1,12 @@
 package me.katanya04.minespawners.loot.lootnbtprovider;
 
+import java.util.Set;
+
+import org.jetbrains.annotations.Nullable;
+
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Set;
 
 import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,7 +18,6 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.predicate.NbtPredicate;
 import net.minecraft.util.context.ContextParameter;
 import net.minecraft.util.dynamic.Codecs;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * A similar class to {@link net.minecraft.loot.provider.nbt.ContextLootNbtProvider}, except you can also create one using a
@@ -49,20 +51,20 @@ public class ContextAndBlockEntityLootNbtProvider implements LootNbtProvider {
     }
 
     public static LootNbtProvider fromTarget(LootContext.EntityReference target) {
-        return new ContextAndBlockEntityLootNbtProvider(new ContextAndBlockEntityLootNbtProvider.EntityTarget(target.getParameter()));
+        return new ContextAndBlockEntityLootNbtProvider(new ContextAndBlockEntityLootNbtProvider.EntityTarget(target.contextParam()));
     }
 
     public static LootNbtProvider fromBlockEntityTarget(LootContext.BlockEntityReference target) {
-        return new ContextAndBlockEntityLootNbtProvider(new ContextAndBlockEntityLootNbtProvider.BlockEntityTarget(target.getParameter()));
+        return new ContextAndBlockEntityLootNbtProvider(new ContextAndBlockEntityLootNbtProvider.BlockEntityTarget(target.contextParam()));
     }
 
     static {
         for (LootContext.EntityReference entityReference : LootContext.EntityReference.values()) {
-            TARGETS.put(entityReference.asString(), new ContextAndBlockEntityLootNbtProvider.EntityTarget(entityReference.getParameter()));
+            TARGETS.put(entityReference.asString(), new ContextAndBlockEntityLootNbtProvider.EntityTarget(entityReference.contextParam()));
         }
 
         for (LootContext.BlockEntityReference blockEntityReference : LootContext.BlockEntityReference.values()) {
-            TARGETS.put(blockEntityReference.asString(), new ContextAndBlockEntityLootNbtProvider.BlockEntityTarget(blockEntityReference.getParameter()));
+            TARGETS.put(blockEntityReference.asString(), new ContextAndBlockEntityLootNbtProvider.BlockEntityTarget(blockEntityReference.contextParam()));
         }
 
         TARGET_CODEC = TARGETS.getCodec(Codec.STRING);
