@@ -7,31 +7,28 @@ import me.katanya04.minespawners.loot.functions.SetDataComponentFunction;
 import me.katanya04.minespawners.loot.lootnbtprovider.ContextAndBlockEntityLootNbtProvider;
 import me.katanya04.minespawners.tags.DynamicTags;
 import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.enchantment.Enchantments;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.item.Items;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.condition.InvertedLootCondition;
-import net.minecraft.loot.condition.MatchToolLootCondition;
-import net.minecraft.loot.condition.RandomChanceLootCondition;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.function.CopyNbtLootFunction;
-import net.minecraft.loot.provider.nbt.ContextLootNbtProvider;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtInt;
-import net.minecraft.nbt.NbtShort;
-import net.minecraft.predicate.NumberRange;
-import net.minecraft.predicate.component.ComponentPredicateTypes;
-import net.minecraft.predicate.component.ComponentsPredicate;
-import net.minecraft.predicate.item.EnchantmentPredicate;
-import net.minecraft.predicate.item.EnchantmentsPredicate;
-import net.minecraft.predicate.item.ItemPredicate;
-import net.minecraft.registry.RegistryKeys;
-
+import net.minecraft.advancements.criterion.DataComponentMatchers;
+import net.minecraft.advancements.criterion.EnchantmentPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.component.predicates.DataComponentPredicates;
+import net.minecraft.core.component.predicates.EnchantmentsPredicate;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.IntTag;
+import net.minecraft.nbt.ShortTag;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.predicates.InvertedLootItemCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 import java.util.List;
 
 /**
@@ -40,35 +37,35 @@ import java.util.List;
 public class SpawnerDrops {
     public static void setDrops() {
         LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
-            if ((Blocks.SPAWNER.getLootTableKey().map(v -> v == key).orElse(false) || Blocks.TRIAL_SPAWNER.getLootTableKey().map(v -> v == key).orElse(false)) && source.isBuiltin()) {
+            if ((Blocks.SPAWNER.getLootTable().map(v -> v == key).orElse(false) || Blocks.TRIAL_SPAWNER.getLootTable().map(v -> v == key).orElse(false)) && source.isBuiltin()) {
 
                 var enchantmentsPredicate = EnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(
-                        registries.getOrThrow(RegistryKeys.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH),
-                        NumberRange.IntRange.atLeast(1))));
+                        registries.lookupOrThrow(Registries.ENCHANTMENT).getOrThrow(Enchantments.SILK_TOUCH),
+                        MinMaxBounds.Ints.atLeast(1))));
 
-                ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.create();
-                pickaxeWithSilktouch.components(ComponentsPredicate.Builder.create()
-                        .partial(ComponentPredicateTypes.ENCHANTMENTS, enchantmentsPredicate).build());
+                ItemPredicate.Builder pickaxeWithSilktouch = ItemPredicate.Builder.item();
+                pickaxeWithSilktouch.withComponents(DataComponentMatchers.Builder.components()
+                        .partial(DataComponentPredicates.ENCHANTMENTS, enchantmentsPredicate).build());
 
-                NbtCompound removeDelayAndCoords = new NbtCompound();
-                removeDelayAndCoords.put("Delay", NbtShort.of((short) -1));
-                removeDelayAndCoords.put("x", NbtInt.of(0));
-                removeDelayAndCoords.put("y", NbtInt.of(0));
-                removeDelayAndCoords.put("z", NbtInt.of(0));
+                CompoundTag removeDelayAndCoords = new CompoundTag();
+                removeDelayAndCoords.put("Delay", ShortTag.valueOf((short) -1));
+                removeDelayAndCoords.put("x", IntTag.valueOf(0));
+                removeDelayAndCoords.put("y", IntTag.valueOf(0));
+                removeDelayAndCoords.put("z", IntTag.valueOf(0));
 
-                BlockEntityType<?> type = Blocks.SPAWNER.getLootTableKey().get() == key ? BlockEntityType.MOB_SPAWNER : BlockEntityType.TRIAL_SPAWNER;
+                BlockEntityType<?> type = Blocks.SPAWNER.getLootTable().get() == key ? BlockEntityType.MOB_SPAWNER : BlockEntityType.TRIAL_SPAWNER;
 
-                LootPool.Builder pool = LootPool.builder()
-                        .with(ItemEntry.builder(Blocks.SPAWNER.getLootTableKey().get() == key ? Items.SPAWNER : Items.TRIAL_SPAWNER))
-                        .apply(CopyDataComponentFunction.builder(ContextAndBlockEntityLootNbtProvider.fromBlockEntityTarget(LootContext.BlockEntityReference.BLOCK_ENTITY), type)
-                                .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponentTypes.BLOCK_ENTITY_DATA))
-                        .apply(SetDataComponentFunction.builder(DataComponentTypes.BLOCK_ENTITY_DATA, TypedEntityData.create(type, removeDelayAndCoords), SetDataComponentFunction.Mode.MERGE))
-                        .conditionally(MatchToolLootCondition.builder(pickaxeWithSilktouch))
-                        .conditionally(RandomChanceLootCondition.builder(SimpleConfig.DROP_CHANCE))
-                        .conditionally(InvertedLootCondition.builder(MatchToolWithDynamicTag.toolMatches(ItemPredicate.Builder.create(), DynamicTags.BLACKLISTED)));
+                LootPool.Builder pool = LootPool.lootPool()
+                        .add(LootItem.lootTableItem(Blocks.SPAWNER.getLootTable().get() == key ? Items.SPAWNER : Items.TRIAL_SPAWNER))
+                        .apply(CopyDataComponentFunction.builder(ContextAndBlockEntityLootNbtProvider.fromBlockEntityTarget(LootContext.BlockEntityTarget.BLOCK_ENTITY), type)
+                                .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponents.BLOCK_ENTITY_DATA))
+                        .apply(SetDataComponentFunction.builder(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(type, removeDelayAndCoords), SetDataComponentFunction.Mode.MERGE))
+                        .when(MatchTool.toolMatches(pickaxeWithSilktouch))
+                        .when(LootItemRandomChanceCondition.randomChance(SimpleConfig.DROP_CHANCE))
+                        .when(InvertedLootItemCondition.invert(MatchToolWithDynamicTag.toolMatches(ItemPredicate.Builder.item(), DynamicTags.BLACKLISTED)));
 
                 // Add the loot pool to the loot table
-                tableBuilder.pool(pool);
+                tableBuilder.withPool(pool);
             }
         });
     }

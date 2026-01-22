@@ -1,11 +1,10 @@
 package me.katanya04.minespawners.mixins;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 
 /**
  * When adding tooltip, take mob info from "SpawnData" nbt tag if it's a spawner, or from "spawn_data" if it's a trial
@@ -14,9 +13,9 @@ import org.spongepowered.asm.mixin.injection.ModifyArg;
  */
 @Mixin(ItemStack.class)
 public class TrialSpawnerTooltipMixin {
-    @ModifyExpressionValue(method="appendTooltip", at = @At(value = "CONSTANT", args = "stringValue=SpawnData"))
+    @ModifyExpressionValue(method="addDetailsToTooltip", at = @At(value = "CONSTANT", args = "stringValue=SpawnData"))
     private String injected(String original) {
         ItemStack thisItem = (ItemStack) (Object) this;
-        return thisItem.isOf(Items.SPAWNER) ? "SpawnData" : "spawn_data";
+        return thisItem.is(Items.SPAWNER) ? "SpawnData" : "spawn_data";
     }
 }

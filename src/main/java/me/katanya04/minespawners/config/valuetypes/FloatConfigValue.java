@@ -5,23 +5,23 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.katanya04.minespawners.Main;
 import me.katanya04.minespawners.config.SimpleConfig;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.provider.number.LootNumberProvider;
-import net.minecraft.loot.provider.number.LootNumberProviderType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Config value that holds a float as its value
  */
-public class FloatConfigValue extends ConfigValue<Float> implements LootNumberProvider {
+public class FloatConfigValue extends ConfigValue<Float> implements NumberProvider {
     private static final MapCodec<FloatConfigValue> LOOT_CODEC = RecordCodecBuilder.mapCodec((instance) ->
             instance.group(Codec.STRING.fieldOf("key").forGetter(ConfigValue::getKey))
                     .apply(instance, path -> (FloatConfigValue) SimpleConfig.values.get(path)));
     private static final LootNumberProviderType LOOT_NUMBER_PROVIDER_TYPE =
-        Registry.register(Registries.LOOT_NUMBER_PROVIDER_TYPE, Identifier.of(Main.MOD_ID, "from_config"),
+        Registry.register(BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE, Identifier.fromNamespaceAndPath(Main.MOD_ID, "from_config"),
                 new LootNumberProviderType(LOOT_CODEC));
     public FloatConfigValue(String key, Float defValue, float min, float max) {
         super(key, defValue, (value) -> value >= min && value <= max);
@@ -32,12 +32,12 @@ public class FloatConfigValue extends ConfigValue<Float> implements LootNumberPr
     }
 
     @Override
-    public float nextFloat(LootContext context) {
+    public float getFloat(@NotNull LootContext context) {
         return this.getValue();
     }
 
     @Override
-    public LootNumberProviderType getType() {
+    public @NotNull LootNumberProviderType getType() {
         return LOOT_NUMBER_PROVIDER_TYPE;
     }
 

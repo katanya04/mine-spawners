@@ -10,17 +10,16 @@ import me.katanya04.minespawners.config.valuetypes.ConfigValue;
 import me.katanya04.minespawners.config.valuetypes.FloatConfigValue;
 import me.katanya04.minespawners.config.valuetypes.ListConfigValue;
 import net.fabricmc.loader.impl.util.log.Log;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.registry.tag.BlockTags;
-import net.minecraft.registry.tag.ItemTags;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -87,19 +86,19 @@ public class SimpleConfig {
     };
 
     static Set<Item> getAllPickaxes() {
-        return Registries.ITEM.stream().filter(item -> isPickaxe(item.getDefaultStack())).collect(Collectors.toSet());
+        return BuiltInRegistries.ITEM.stream().filter(item -> isPickaxe(item.getDefaultInstance())).collect(Collectors.toSet());
     }
 
     private static boolean isPickaxe(String name) {
-        return isPickaxe(Registries.ITEM.get(Identifier.tryParse(name)).getDefaultStack());
+        return isPickaxe(BuiltInRegistries.ITEM.getValue(Identifier.tryParse(name)).getDefaultInstance());
     }
 
     private static boolean isPickaxe(ItemStack stack) {
-        return  stack.isIn(ItemTags.PICKAXES) ||
-                stack.isSuitableFor(Blocks.SPAWNER.getDefaultState()) ||
-                (stack.get(DataComponentTypes.TOOL) != null && stack.get(DataComponentTypes.TOOL).rules().stream()
-                        .anyMatch(r -> (r.blocks() instanceof RegistryEntryList.Named<Block> blocks) &&
-                                blocks.getTag().id().equals(BlockTags.PICKAXE_MINEABLE.id()))
+        return  stack.is(ItemTags.PICKAXES) ||
+                stack.isCorrectToolForDrops(Blocks.SPAWNER.defaultBlockState()) ||
+                (stack.get(DataComponents.TOOL) != null && stack.get(DataComponents.TOOL).rules().stream()
+                        .anyMatch(r -> (r.blocks() instanceof HolderSet.Named<Block> blocks) &&
+                                blocks.key().location().equals(BlockTags.MINEABLE_WITH_PICKAXE.location()))
                 );
     }
 

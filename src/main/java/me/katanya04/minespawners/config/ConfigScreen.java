@@ -2,14 +2,14 @@ package me.katanya04.minespawners.config;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.GameOptionsScreen;
-import net.minecraft.client.gui.widget.OptionListWidget;
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget;
-import net.minecraft.client.option.SimpleOption;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
-import net.minecraft.text.Text;
+import net.minecraft.client.OptionInstance;
+import net.minecraft.client.gui.components.OptionsList;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -20,18 +20,18 @@ import java.util.List;
  * only, just modify the value on the config toml file.
  */
 @Environment(EnvType.CLIENT)
-public class ConfigScreen extends GameOptionsScreen {
-    protected final SimpleOption<Double> slider;
+public class ConfigScreen extends OptionsSubScreen {
+    protected final OptionInstance<Double> slider;
     protected final List<Item> pickaxes;
     protected PickaxesList pickaxesList;
 
     protected ConfigScreen(Screen previousScreen) {
-        super(previousScreen, null, Text.translatable("config.title"));
-        this.slider = new SimpleOption<>(
+        super(previousScreen, null, Component.translatable("config.title"));
+        this.slider = new OptionInstance<>(
                 "config.drop_chance",
-                SimpleOption.emptyTooltip(),
+                OptionInstance.noTooltip(),
                 ConfigScreen::percentValueLabel,
-                SimpleOption.DoubleSliderCallbacks.INSTANCE,
+                OptionInstance.UnitDouble.INSTANCE,
                 (double) SimpleConfig.DROP_CHANCE.getValue(),
                 SimpleConfig.DROP_CHANCE::setValue
         );
@@ -45,44 +45,44 @@ public class ConfigScreen extends GameOptionsScreen {
     }
 
     protected double getHarvestLevel(Item pickaxe) {
-        return (pickaxe.getDefaultStack().get(DataComponentTypes.TOOL) == null ?
-                1 : pickaxe.getDefaultStack().get(DataComponentTypes.TOOL).rules().stream()
+        return (pickaxe.getDefaultInstance().get(DataComponents.TOOL) == null ?
+                1 : pickaxe.getDefaultInstance().get(DataComponents.TOOL).rules().stream()
                 .filter(r -> r.speed().isPresent()).mapToDouble(r -> r.speed().get()).max().orElse(1))
-                * (pickaxe.getDefaultStack().get(DataComponentTypes.MAX_DAMAGE) == null ?
-                1 : pickaxe.getDefaultStack().get(DataComponentTypes.MAX_DAMAGE));
+                * (pickaxe.getDefaultInstance().get(DataComponents.MAX_DAMAGE) == null ?
+                1 : pickaxe.getDefaultInstance().get(DataComponents.MAX_DAMAGE));
     }
 
-    private static Text percentValueLabel(Text p_231898_, double p_231899_) {
-        return Text.translatable("options.percent_value", p_231898_, (int)(p_231899_ * 100.0));
+    private static Component percentValueLabel(Component p_231898_, double p_231899_) {
+        return Component.translatable("options.percent_value", p_231898_, (int)(p_231899_ * 100.0));
     }
 
     @Override
     protected void addOptions() {
-        this.body.addSingleOptionEntry(slider);
+        this.list.addBig(slider);
     }
 
     @Override
-    protected void initBody() {
-        this.body = this.layout.addBody(new OptionListWidget(this.client, this.width, this) {
+    protected void addContents() {
+        this.list = this.layout.addToContents(new OptionsList(this.minecraft, this.width, this) {
             @Override
-            public void position(int width, @NotNull ThreePartsLayoutWidget layout) {
-                this.position(width, ConfigScreen.this.slider.createWidget(null).getHeight() + 10, layout.getHeaderHeight());
+            public void updateSize(int width, @NotNull HeaderAndFooterLayout layout) {
+                this.updateSizeAndPosition(width, ConfigScreen.this.slider.createButton(null).getHeight() + 10, layout.getHeaderHeight());
             }
         });
-        this.body.setHeight(slider.createWidget(null).getHeight() + 10);
-        this.pickaxesList = this.layout.addBody(new PickaxesList(this, this.client));
+        this.list.setHeight(slider.createButton(null).getHeight() + 10);
+        this.pickaxesList = this.layout.addToContents(new PickaxesList(this, this.minecraft));
         this.addOptions();
     }
 
     @Override
-    protected void refreshWidgetPositions() {
-        super.refreshWidgetPositions();
-        this.pickaxesList.position(this.width, this.layout);
+    protected void repositionElements() {
+        super.repositionElements();
+        this.pickaxesList.updateSize(this.width, this.layout);
     }
 
     @Override
-    public void close() {
+    public void onClose() {
         SimpleConfig.saveToFile();
-        super.close();
+        super.onClose();
     }
 }

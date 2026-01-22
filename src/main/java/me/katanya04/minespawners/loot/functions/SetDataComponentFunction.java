@@ -4,22 +4,18 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import me.katanya04.minespawners.loot.LootRegistration;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.type.NbtComponent;
-import net.minecraft.entity.TypedEntityData;
-import net.minecraft.item.ItemStack;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.function.ConditionalLootFunction;
-import net.minecraft.loot.function.LootFunctionType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.util.dynamic.Codecs;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TypedEntityData;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
+import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -31,34 +27,34 @@ import java.util.stream.Collectors;
 /**
  * A LootTable function that sets NBT to a ComponentType<TypedEntityData<?>> of the target
  */
-public class SetDataComponentFunction extends ConditionalLootFunction {
+public class SetDataComponentFunction extends LootItemConditionalFunction {
     public static final MapCodec<SetDataComponentFunction> CODEC = RecordCodecBuilder.mapCodec(
-            instance -> addConditionsField(instance)
-                    .and(ComponentType.CODEC.fieldOf("dataComponentType").forGetter(function -> function.dataComponentType))
-                    .and(TypedEntityData.createCodec(Registries.BLOCK_ENTITY_TYPE.getCodec()).fieldOf("data").forGetter(function -> function.data))
+            instance -> commonFields(instance)
+                    .and(DataComponentType.CODEC.fieldOf("dataComponentType").forGetter(function -> function.dataComponentType))
+                    .and(TypedEntityData.codec(BuiltInRegistries.BLOCK_ENTITY_TYPE.byNameCodec()).fieldOf("data").forGetter(function -> function.data))
                     .and(Mode.CODEC.fieldOf("mode").forGetter(function -> function.mode))
                     .apply(instance, (conditions, componentType, typedEntityData, mode) ->
-                            new SetDataComponentFunction(conditions, (ComponentType<TypedEntityData<BlockEntityType<?>>>) componentType, typedEntityData, mode))
+                            new SetDataComponentFunction(conditions, (DataComponentType<TypedEntityData<BlockEntityType<?>>>) componentType, typedEntityData, mode))
     );
-    private final ComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType;
+    private final DataComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType;
     private final TypedEntityData<BlockEntityType<?>> data;
-    public enum Mode implements StringIdentifiable {
+    public enum Mode implements StringRepresentable {
         REPLACE("replace"),
         APPEND("append"),
         MERGE("merge");
-        public static final Codec<Mode> CODEC = StringIdentifiable.createCodec(Mode::values);
+        public static final Codec<Mode> CODEC = StringRepresentable.fromEnum(Mode::values);
         private final String name;
         Mode(String name) {
             this.name = name;
         }
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return this.name;
         }
     }
     private final Mode mode;
 
-    private SetDataComponentFunction(List<LootCondition> conditions, ComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType, TypedEntityData<BlockEntityType<?>> data, Mode mode) {
+    private SetDataComponentFunction(List<LootItemCondition> conditions, DataComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType, TypedEntityData<BlockEntityType<?>> data, Mode mode) {
         super(conditions);
         this.dataComponentType = dataComponentType;
         this.data = data;
@@ -66,12 +62,12 @@ public class SetDataComponentFunction extends ConditionalLootFunction {
     }
 
     @Override
-    public @NotNull LootFunctionType<SetDataComponentFunction> getType() {
+    public @NotNull LootItemFunctionType<SetDataComponentFunction> getType() {
         return LootRegistration.setDataComponentFunctionType;
     }
 
     @Override
-    public @NotNull ItemStack process(@NotNull ItemStack item, @NotNull LootContext ignored) {
+    public @NotNull ItemStack run(@NotNull ItemStack item, @NotNull LootContext ignored) {
         TypedEntityData<BlockEntityType<?>> data;
         if (this.mode == Mode.REPLACE) {
             data = this.data;
@@ -80,11 +76,11 @@ public class SetDataComponentFunction extends ConditionalLootFunction {
             if (currentData == null) {
                 data = this.data;
             } else {
-                Map<String, NbtElement> currentEntries = currentData.copyNbtWithoutId().entrySet().stream()
+                Map<String, Tag> currentEntries = currentData.copyTagWithoutId().entrySet().stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                Map<String, NbtElement> newEntries = this.data.copyNbtWithoutId().entrySet().stream()
+                Map<String, Tag> newEntries = this.data.copyTagWithoutId().entrySet().stream()
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                Map<String, NbtElement> entries;
+                Map<String, Tag> entries;
                 if (this.mode == Mode.APPEND) {
                     newEntries.putAll(currentEntries);
                     entries = newEntries;
@@ -92,18 +88,18 @@ public class SetDataComponentFunction extends ConditionalLootFunction {
                     currentEntries.putAll(newEntries);
                     entries = currentEntries;
                 }
-                NbtCompound newData = new NbtCompound();
-                for (Map.Entry<String, NbtElement> entry : entries.entrySet()) {
+                CompoundTag newData = new CompoundTag();
+                for (Map.Entry<String, Tag> entry : entries.entrySet()) {
                     newData.put(entry.getKey(), entry.getValue());
                 }
-                data = TypedEntityData.create(this.data.getType(), newData);
+                data = TypedEntityData.of(this.data.type(), newData);
             }
         }
         item.set(dataComponentType, data);
         return item;
     }
 
-    public static ConditionalLootFunction.Builder<?> builder(ComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType, TypedEntityData<BlockEntityType<?>> data, Mode mode) {
-        return builder(conditions -> new SetDataComponentFunction(conditions, dataComponentType, data, mode));
+    public static LootItemConditionalFunction.Builder<?> builder(DataComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType, TypedEntityData<BlockEntityType<?>> data, Mode mode) {
+        return simpleBuilder(conditions -> new SetDataComponentFunction(conditions, dataComponentType, data, mode));
     }
 }

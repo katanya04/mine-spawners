@@ -1,15 +1,15 @@
 package me.katanya04.minespawners.mixins;
 
 import me.katanya04.minespawners.tags.DynamicTags;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SpawnerBlock;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.level.block.SpawnerBlock;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,12 +22,12 @@ import java.util.Optional;
  */
 @Mixin(SpawnerBlock.class)
 public class SpawnerBlockDropsXpMixin {
-    @Inject(method = "onStacksDropped", at = @At("HEAD"), cancellable = true)
-    private void injected(BlockState state, ServerWorld world, BlockPos pos, ItemStack tool, boolean dropExperience, CallbackInfo ci) {
-        Optional<Registry<Enchantment>> enchantmentRegistry = world.getRegistryManager().getOptional(RegistryKeys.ENCHANTMENT);
-        enchantmentRegistry.flatMap(enchantments -> enchantments.getEntry(Identifier.ofVanilla("silk_touch")))
+    @Inject(method = "spawnAfterBreak", at = @At("HEAD"), cancellable = true)
+    private void injected(BlockState state, ServerLevel world, BlockPos pos, ItemStack tool, boolean dropExperience, CallbackInfo ci) {
+        Optional<Registry<Enchantment>> enchantmentRegistry = world.registryAccess().lookup(Registries.ENCHANTMENT);
+        enchantmentRegistry.flatMap(enchantments -> enchantments.get(Identifier.withDefaultNamespace("silk_touch")))
                 .ifPresent(silkTouch -> {
-                    if (tool.getEnchantments().getEnchantments().contains(silkTouch) && tool.isSuitableFor(state) && !DynamicTags.isInTag(tool, DynamicTags.BLACKLISTED))
+                    if (tool.getEnchantments().keySet().contains(silkTouch) && tool.isCorrectToolForDrops(state) && !DynamicTags.isInTag(tool, DynamicTags.BLACKLISTED))
                         ci.cancel();
                 });
     }
