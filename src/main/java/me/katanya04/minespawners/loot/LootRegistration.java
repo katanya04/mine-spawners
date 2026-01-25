@@ -29,6 +29,6 @@ public class LootRegistration {
         matchToolWithDynamicTagType = Registry.register(BuiltInRegistries.LOOT_CONDITION_TYPE,
                 Identifier.fromNamespaceAndPath(Main.MOD_ID, "match_tool_with_dynamic_tag"), new LootItemConditionType(MatchToolWithDynamicTag.CODEC));
         ContextAndBlockEntityLootNbtProviderType = Registry.register(BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE,
-                Identifier.fromNamespaceAndPath(Main.MOD_ID, "context_and_block_entity"), new LootNbtProviderType(ContextAndBlockEntityLootNbtProvider.CODEC));
+                Identifier.fromNamespaceAndPath(Main.MOD_ID, "context_and_block_entity"), new LootNbtProviderType(ContextAndBlockEntityLootNbtProvider.MAP_CODEC));
     }
 }

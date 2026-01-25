@@ -58,7 +58,7 @@ public class PickaxesList extends ContainerObjectSelectionList<PickaxesList.@Not
     }
 
     @Environment(EnvType.CLIENT)
-    public abstract static class Entry extends ContainerObjectSelectionList.Entry<me.katanya04.minespawners.config.PickaxesList.@NotNull Entry> {}
+    public abstract static class Entry extends ContainerObjectSelectionList.Entry<@NotNull Entry> {}
 
     @Environment(EnvType.CLIENT)
     public class RowEntry extends me.katanya04.minespawners.config.PickaxesList.Entry {

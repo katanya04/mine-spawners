@@ -57,7 +57,7 @@ public class SpawnerDrops {
 
                 LootPool.Builder pool = LootPool.lootPool()
                         .add(LootItem.lootTableItem(Blocks.SPAWNER.getLootTable().get() == key ? Items.SPAWNER : Items.TRIAL_SPAWNER))
-                        .apply(CopyDataComponentFunction.builder(ContextAndBlockEntityLootNbtProvider.fromBlockEntityTarget(LootContext.BlockEntityTarget.BLOCK_ENTITY), type)
+                        .apply(CopyDataComponentFunction.builder(ContextAndBlockEntityLootNbtProvider.forContextBlockEntity(LootContext.BlockEntityTarget.BLOCK_ENTITY), type)
                                 .withOperation("{}", "{}", CopyDataComponentFunction.MergeStrategy.REPLACE, DataComponents.BLOCK_ENTITY_DATA))
                         .apply(SetDataComponentFunction.builder(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.of(type, removeDelayAndCoords), SetDataComponentFunction.Mode.MERGE))
                         .when(MatchTool.toolMatches(pickaxeWithSilktouch))

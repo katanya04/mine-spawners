@@ -81,11 +81,11 @@ public class CopyDataComponentFunction extends LootItemConditionalFunction {
         return item;
     }
 
-    public static me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder builder(NbtProvider source, BlockEntityType<?> blockEntityType) {
-        return new me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder(source, blockEntityType);
+    public static Builder builder(NbtProvider source, BlockEntityType<?> blockEntityType) {
+        return new Builder(source, blockEntityType);
     }
 
-    public static class Builder extends LootItemConditionalFunction.Builder<me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder> {
+    public static class Builder extends LootItemConditionalFunction.Builder<Builder> {
         private final NbtProvider source;
         private final BlockEntityType<?> blockEntityType;
         private final List<CopyOperation> ops = Lists.newArrayList();
@@ -95,7 +95,7 @@ public class CopyDataComponentFunction extends LootItemConditionalFunction {
             this.blockEntityType = blockEntityType;
         }
 
-        public me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder withOperation(String sourcePath, String targetPath, MergeStrategy operator, DataComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
+        public Builder withOperation(String sourcePath, String targetPath, MergeStrategy operator, DataComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
             try {
                 this.ops.add(new CopyOperation(NbtPathArgument.NbtPath.of(sourcePath),
                         NbtPathArgument.NbtPath.of(targetPath), operator, ComponentType));
@@ -105,12 +105,12 @@ public class CopyDataComponentFunction extends LootItemConditionalFunction {
             }
         }
 
-        public me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder withOperation(String source, String target, DataComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
+        public Builder withOperation(String source, String target, DataComponentType<TypedEntityData<BlockEntityType<?>>> ComponentType) {
             return this.withOperation(source, target, MergeStrategy.REPLACE, ComponentType);
         }
 
         @Override
-        protected @NotNull me.katanya04.minespawners.loot.functions.CopyDataComponentFunction.Builder getThis() {
+        protected @NotNull Builder getThis() {
             return this;
         }
 
