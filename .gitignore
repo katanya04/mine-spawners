@@ -102,6 +102,7 @@ $RECYCLE.BIN/
 
 .gradle
 build/
+bin/
 
 # Ignore Gradle GUI config
 gradle-app.setting
@@ -116,4 +117,7 @@ run/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
-gradle/wrapper/gradle-wrapper.properties
+# gradle-wrapper.properties should not be ignored
+
+# IDE files
+.vscode/
