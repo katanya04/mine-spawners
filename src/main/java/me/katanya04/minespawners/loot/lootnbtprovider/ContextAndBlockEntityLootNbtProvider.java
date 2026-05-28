@@ -9,14 +9,12 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.advancements.criterion.NbtPredicate;
 import net.minecraft.nbt.Tag;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.providers.nbt.LootNbtProviderType;
 import net.minecraft.world.level.storage.loot.providers.nbt.NbtProvider;
 import org.jspecify.annotations.Nullable;
 
@@ -39,10 +37,6 @@ public class ContextAndBlockEntityLootNbtProvider implements NbtProvider {
 
     private ContextAndBlockEntityLootNbtProvider(LootContextArg<Tag> lootContextArg) {
         this.source = lootContextArg;
-    }
-
-    public @NotNull LootNbtProviderType getType() {
-        return LootRegistration.ContextAndBlockEntityLootNbtProviderType;
     }
 
     public @Nullable Tag get(@NotNull LootContext lootContext) {
@@ -76,5 +70,10 @@ public class ContextAndBlockEntityLootNbtProvider implements NbtProvider {
         public Tag get(@NotNull Entity entity) {
             return NbtPredicate.getEntityTagToCompare(entity);
         }
+    }
+
+    @Override
+    public MapCodec<? extends NbtProvider> codec() {
+        return MAP_CODEC;
     }
 }

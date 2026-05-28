@@ -1,7 +1,6 @@
 package me.katanya04.minespawners;
 
 import me.katanya04.minespawners.config.SimpleConfig;
-import me.katanya04.minespawners.loot.LootRegistration;
 import me.katanya04.minespawners.loot.SpawnerDrops;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.impl.util.log.LogCategory;
@@ -14,7 +13,6 @@ public class Main implements ModInitializer {
     public static final LogCategory logCategory = LogCategory.create("Mine Spawners");
     @Override
     public void onInitialize() {
-        LootRegistration.register();
         SpawnerDrops.setDrops();
         SimpleConfig.initializeConfig();
     }

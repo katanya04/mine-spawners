@@ -3,7 +3,6 @@ package me.katanya04.minespawners.loot.functions;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -14,7 +13,6 @@ import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,11 +58,6 @@ public class SetDataComponentFunction extends LootItemConditionalFunction {
     }
 
     @Override
-    public @NotNull LootItemFunctionType<SetDataComponentFunction> getType() {
-        return LootRegistration.setDataComponentFunctionType;
-    }
-
-    @Override
     public @NotNull ItemStack run(@NotNull ItemStack item, @NotNull LootContext ignored) {
         TypedEntityData<BlockEntityType<?>> data;
         if (this.mode == Mode.REPLACE) {
@@ -99,5 +92,10 @@ public class SetDataComponentFunction extends LootItemConditionalFunction {
 
     public static LootItemConditionalFunction.Builder<?> builder(DataComponentType<TypedEntityData<BlockEntityType<?>>> dataComponentType, TypedEntityData<BlockEntityType<?>> data, Mode mode) {
         return simpleBuilder(conditions -> new SetDataComponentFunction(conditions, dataComponentType, data, mode));
+    }
+
+    @Override
+    public MapCodec<? extends LootItemConditionalFunction> codec() {
+        return CODEC;
     }
 }
