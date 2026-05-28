@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -84,10 +84,10 @@ public class PickaxesList extends ContainerObjectSelectionList<PickaxesList.@Not
         }
 
         @Override
-        public void renderContent(@NotNull GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(@NotNull GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             Arrays.stream(this.buttons).forEach(b -> {
                 b.setY(this.getY());
-                b.render(context, mouseX, mouseY, deltaTicks);
+                b.extractContents(context, mouseX, mouseY, deltaTicks);
             });
         }
     }
@@ -123,8 +123,8 @@ public class PickaxesList extends ContainerObjectSelectionList<PickaxesList.@Not
         }
 
         @Override
-        public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
-            context.drawString(
+        public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+            context.text(
                     PickaxesList.this.minecraft.font, this.title, PickaxesList.this.width / 2 - this.width / 2,
                     this.getY() + this.getHeight() / 2 - PickaxesList.this.minecraft.font.lineHeight / 2, -1, true
             );

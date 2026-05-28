@@ -23,7 +23,7 @@
   "mixins": ["mine-spawners.mixins.json"],
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric": "*",
-    "minecraft": ">=1.21.11 <1.22"
+    "fabric-api": "*",
+    "minecraft": ">=26.1 <26.2"
   }
 }

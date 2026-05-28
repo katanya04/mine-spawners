@@ -1,11 +1,10 @@
 package me.katanya04.minespawners.config;
 
 import java.util.List;
-
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.MutableComponent;
@@ -31,21 +30,21 @@ public class PickaxeButton extends Button {
                     SimpleConfig.BLACKLISTED_PICKAXES.setValue(blacklistedPickaxes);
                 },
                 supplier ->
-                        MutableComponent.create(new PlainTextContents.LiteralContents(pickaxe.getName().getString()))
+                        MutableComponent.create(new PlainTextContents.LiteralContents(pickaxe.getDefaultInstance().getItemName().getString()))
         );
         this.pickaxe = pickaxe;
         this.screen = screen;
     }
 
     @Override
-    protected void renderContents(GuiGraphics context, int mouseX, int mouseY, float deltaTicks) {
+    protected void extractContents(GuiGraphicsExtractor context, int mouseX, int mouseY, float deltaTicks) {
         int itemX = this.getX() + (this.width - 16) / 2;
         int itemY = this.getY() + (this.height - 16) / 2;
-        context.renderItem(this.pickaxe.getDefaultInstance(), itemX, itemY);
+        context.fakeItem(this.pickaxe.getDefaultInstance(), itemX, itemY);
         if (this.isHovered())
-            context.setTooltipForNextFrame(this.screen.getFont(), this.pickaxe.getName(), mouseX, mouseY);
+            context.setTooltipForNextFrame(this.screen.getFont(), this.pickaxe.getDefaultInstance(), mouseX, mouseY);
         if (SimpleConfig.BLACKLISTED_PICKAXES.contains(pickaxe.toString())) {
-            context.drawString(this.screen.getFont(),
+            context.text(this.screen.getFont(),
                     MutableComponent.create(new PlainTextContents.LiteralContents("X")).withStyle(ChatFormatting.BOLD),
                     getX(), getY(), 0xFFFF0000, true);
         }

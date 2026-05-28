@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import me.katanya04.minespawners.loot.LootRegistration;
 import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
@@ -23,7 +22,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.functions.LootItemConditionalFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
-import net.minecraft.world.level.storage.loot.functions.LootItemFunctionType;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.providers.nbt.NbtProvider;
 import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
@@ -54,10 +52,6 @@ public class CopyDataComponentFunction extends LootItemConditionalFunction {
         this.source = source;
         this.blockEntityType = blockEntityType;
         this.operations = List.copyOf(operations);
-    }
-
-    public @NotNull LootItemFunctionType<CopyDataComponentFunction> getType() {
-        return LootRegistration.copyDataComponentFunctionType;
     }
 
     @Override
@@ -195,5 +189,10 @@ public class CopyDataComponentFunction extends LootItemConditionalFunction {
         public String getSerializedName() {
             return this.name;
         }
+    }
+
+    @Override
+    public @NotNull MapCodec<? extends CopyDataComponentFunction> codec() {
+        return CODEC;
     }
 }
