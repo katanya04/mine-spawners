@@ -1,5 +1,5 @@
 # mine-spawners
-A Minecraft 1.20-1.21 mod made with fabric that lets you mine spawners.
+A Minecraft 1.20-26.1.2 mod made with fabric that lets you mine spawners.
 You can mine them with a silk touck pickaxe to get the spawner, doing so also makes the spawner not drop xp (for obvious reasons).
 
 Before 1.20.5:
